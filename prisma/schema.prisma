@@ -63,6 +63,7 @@ model User {
     accounts      Account[]
     sessions      Session[]
     posts         Post[]
+    urls          ShortenedURL[]
 }
 
 model VerificationToken {
@@ -71,4 +72,16 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model ShortenedURL {
+    id        String   @id @default(cuid())
+    slug      String   @unique // The short code for the URL
+    longUrl   String   @db.Text // The original URL
+    createdAt DateTime @default(now())
+    clicks    Int      @default(0) // Track number of clicks/redirects
+    userId    String?  // Optional: link to user who created it
+    user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+    @@index([slug])
 }
