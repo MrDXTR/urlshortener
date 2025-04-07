@@ -1,31 +1,98 @@
 import Link from "next/link";
-import { UrlShortener } from "~/app/_components/url-shortener";
 import { auth } from "~/server/auth";
+import { ThemeToggle } from "./_components/theme-toggle";
+import { HyperText } from "~/components/magicui/hyper-text";
+import { BorderBeam } from "~/components/magicui/border-beam";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import { UrlShortener } from "./_components/url-shortener";
+import { FeaturesSection } from "./_components/features-section";
+import { UrlListSheet } from "./_components/url-list-sheet";
 
 export default async function Home() {
   const session = await auth();
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-        <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-          URL <span className="text-[hsl(280,100%,70%)]">Shortener</span>
-        </h1>
-        
-        <UrlShortener />
-        
-        <div className="flex flex-col items-center justify-center gap-4">
-          <p className="text-center text-lg text-white">
-            {session && <span>Logged in as {session.user?.name}</span>}
-          </p>
-          <Link
-            href={session ? "/api/auth/signout" : "/api/auth/signin"}
-            className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
-          >
-            {session ? "Sign out" : "Sign in to track your URLs"}
-          </Link>
+    <div className="flex min-h-screen flex-col">
+      {/* Header */}
+      <header className="bg-background/80 border-border fixed top-0 z-50 w-full border-b backdrop-blur">
+        <div className="container flex h-16 items-center justify-between px-4">
+          <h1 className="text-xl font-bold">
+            <HyperText>URL Shortener</HyperText>
+          </h1>
+          <div className="flex items-center gap-4">
+            {session ? (
+              <>
+                <UrlListSheet />
+                <Link
+                  href="/api/auth/signout"
+                  className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+                >
+                  Sign out
+                </Link>
+              </>
+            ) : (
+              <Link
+                href="/api/auth/signin"
+                className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+              >
+                Sign in
+              </Link>
+            )}
+            <ThemeToggle />
+          </div>
         </div>
-      </div>
-    </main>
+      </header>
+
+      {/* Main content */}
+      <main className="relative container flex flex-1 flex-col items-center justify-center gap-8 px-4 pt-24 pb-16">
+        <div className="w-full max-w-md space-y-2 text-center">
+          <h2 className="text-4xl font-bold tracking-tight">
+            Shorten your{" "}
+            <span className="from-primary to-primary/70 bg-gradient-to-r bg-clip-text text-transparent">
+              links
+            </span>
+          </h2>
+          <p className="text-muted-foreground">
+            Simple, fast, and reliable URL shortening service
+          </p>
+        </div>
+
+        <div className="relative w-full max-w-md">
+          <BorderBeam
+            size={40}
+            colorFrom="hsl(var(--primary))"
+            colorTo="hsl(var(--secondary))"
+          />
+          <Card className="bg-card/50 backdrop-blur">
+            <CardHeader>
+              <CardTitle>Create Short URL</CardTitle>
+              <CardDescription>
+                Enter a long URL to create a shortened version
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <UrlShortener />
+            </CardContent>
+          </Card>
+        </div>
+
+        <FeaturesSection />
+      </main>
+
+      {/* Footer */}
+      <footer className="border-border bg-muted/20 border-t py-6">
+        <div className="text-muted-foreground container px-4 text-center text-sm">
+          <p>
+            © {new Date().getFullYear()} URL Shortener. All rights reserved.
+          </p>
+        </div>
+      </footer>
+    </div>
   );
 }

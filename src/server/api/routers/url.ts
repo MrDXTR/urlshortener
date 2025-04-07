@@ -55,7 +55,7 @@ export const urlRouter = createTRPCRouter({
         if (!url) {
           throw new Error("URL not found");
         }
-        
+
         // Update click count in a separate query
         await ctx.db.shortenedURL.update({
           where: { id: url.id },
@@ -80,4 +80,4 @@ export const urlRouter = createTRPCRouter({
       throw error;
     }
   }),
-}); 
+});
