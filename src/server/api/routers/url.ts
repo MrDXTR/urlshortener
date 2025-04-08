@@ -44,6 +44,46 @@ export const urlRouter = createTRPCRouter({
       }
     }),
 
+  // Public procedure for non-authenticated users
+  createAnon: publicProcedure
+    .input(
+      z.object({
+        url: urlSchema,
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const slug = nanoid(7); // Generate a 7-character slug
+
+      try {
+        // Check if slug already exists
+        const existing = await ctx.db.shortenedURL.findUnique({
+          where: { slug },
+        });
+
+        if (existing) {
+          // Try again with a new slug
+          return ctx.db.shortenedURL.create({
+            data: {
+              slug: nanoid(7),
+              longUrl: input.url,
+              // No userId for anonymous users
+            },
+          });
+        }
+
+        return await ctx.db.shortenedURL.create({
+          data: {
+            slug,
+            longUrl: input.url,
+            // No userId for anonymous users
+          },
+        });
+      } catch (error) {
+        console.error("Error creating anonymous shortened URL:", error);
+        throw error;
+      }
+    }),
+
   getBySlug: publicProcedure
     .input(z.object({ slug: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
@@ -79,5 +119,29 @@ export const urlRouter = createTRPCRouter({
       console.error("Error fetching user URLs:", error);
       throw error;
     }
+  }),
+
+  getUserStats: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+
+    // Get total number of URLs created by user
+    const totalUrls = await ctx.db.shortenedURL.count({
+      where: { userId },
+    });
+
+    // Get total number of clicks across all user's URLs
+    const result = await ctx.db.shortenedURL.aggregate({
+      where: { userId },
+      _sum: {
+        clicks: true,
+      },
+    });
+
+    const totalClicks = result._sum.clicks || 0;
+
+    return {
+      totalUrls,
+      totalClicks,
+    };
   }),
 });

@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Copy, CheckIcon, ExternalLinkIcon } from "lucide-react";
+import { Copy, CheckIcon, ExternalLinkIcon, TrendingUpIcon } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { api } from "~/trpc/react";
+import { AuroraText } from "~/components/magicui/aurora-text";
+import { AnalyticsDialog } from "../analytics-dialog";
 
 export function UserUrlList() {
   const { data: urls, isLoading } = api.url.getUserUrls.useQuery();
@@ -25,17 +27,20 @@ export function UserUrlList() {
 
   if (isLoading) {
     return (
-      <p className="text-muted-foreground py-4 text-center">
-        Loading your URLs...
-      </p>
+      <div className="py-8 flex justify-center items-center">
+        <div className="h-8 w-8 rounded-full border-2 border-primary/50 border-t-transparent animate-spin" />
+      </div>
     );
   }
 
   if (!urls || urls.length === 0) {
     return (
-      <p className="text-muted-foreground py-4 text-center">
-        You haven&apos;t created any shortened URLs yet.
-      </p>
+      <div className="py-8 text-center rounded-lg border border-dashed border-primary/30 p-6">
+        <p className="text-muted-foreground mb-2">
+          You haven&apos;t created any shortened URLs yet.
+        </p>
+        <p className="text-xs text-primary/70">Create your first shortened URL to see it here!</p>
+      </div>
     );
   }
 
@@ -44,25 +49,31 @@ export function UserUrlList() {
       {urls.map((url) => (
         <div
           key={url.id}
-          className="bg-card/50 hover:bg-card/80 flex items-center justify-between rounded-md border p-4 transition-colors"
+          className="bg-card/70 hover:bg-card/90 flex items-center justify-between rounded-md border border-primary/20 p-4 transition-all hover:shadow-md relative overflow-hidden group"
         >
-          <div className="flex flex-col">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          
+          <div className="flex flex-col relative">
             <div className="mb-1 flex items-center gap-2">
-              <Badge className="w-fit">{url.slug}</Badge>
-              <span className="text-muted-foreground text-xs">
-                {url.clicks} {url.clicks === 1 ? "click" : "clicks"}
-              </span>
+              <Badge variant="outline" className="bg-primary/10 hover:bg-primary/20 transition-colors">
+                {url.slug}
+              </Badge>
+              <div className="flex items-center gap-1 text-xs text-primary/60">
+                <TrendingUpIcon className="h-3 w-3" />
+                <span>{url.clicks}</span>
+              </div>
             </div>
             <span className="text-muted-foreground max-w-[200px] truncate text-sm md:max-w-xs">
               {url.longUrl}
             </span>
           </div>
-          <div className="flex gap-1">
+          
+          <div className="flex gap-1 relative">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => copyToClipboard(url.id, url.slug)}
-              className="h-8 w-8"
+              className="h-8 w-8 hover:bg-primary/10 transition-colors"
             >
               {copiedId === url.id ? (
                 <CheckIcon className="h-4 w-4 text-green-500" />
@@ -71,7 +82,12 @@ export function UserUrlList() {
               )}
               <span className="sr-only">Copy URL</span>
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 hover:bg-primary/10 transition-colors" 
+              asChild
+            >
               <a
                 href={`/${url.slug}`}
                 target="_blank"
@@ -81,6 +97,7 @@ export function UserUrlList() {
                 <ExternalLinkIcon className="h-4 w-4" />
               </a>
             </Button>
+            <AnalyticsDialog slug={url.slug} totalClicks={url.clicks} />
           </div>
         </div>
       ))}
