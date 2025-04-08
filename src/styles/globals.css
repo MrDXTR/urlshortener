@@ -46,40 +46,40 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --animate-shine: shine var(--duration) infinite linear;
   @keyframes shine {
-  0% {
-    background-position: 0% 0%;
+    0% {
+      background-position: 0% 0%;
     }
-  50% {
-    background-position: 100% 100%;
+    50% {
+      background-position: 100% 100%;
     }
-  to {
-    background-position: 0% 0%;
+    to {
+      background-position: 0% 0%;
     }
   }
-  --animate-aurora: aurora 8s ease-in-out infinite alternate
-;
+  --animate-aurora: aurora 8s ease-in-out infinite alternate;
   @keyframes aurora {
-  0% {
-    backgroundPosition: 0% 50%;
-    transform: rotate(-5deg) scale(0.9);
+    0% {
+      backgroundPosition: 0% 50%;
+      transform: rotate(-5deg) scale(0.9);
     }
-  25% {
-    backgroundPosition: 50% 100%;
-    transform: rotate(5deg) scale(1.1);
+    25% {
+      backgroundPosition: 50% 100%;
+      transform: rotate(5deg) scale(1.1);
     }
-  50% {
-    backgroundPosition: 100% 50%;
-    transform: rotate(-3deg) scale(0.95);
+    50% {
+      backgroundPosition: 100% 50%;
+      transform: rotate(-3deg) scale(0.95);
     }
-  75% {
-    backgroundPosition: 50% 0%;
-    transform: rotate(3deg) scale(1.05);
+    75% {
+      backgroundPosition: 50% 0%;
+      transform: rotate(3deg) scale(1.05);
     }
-  100% {
-    backgroundPosition: 0% 50%;
-    transform: rotate(-5deg) scale(0.9);
+    100% {
+      backgroundPosition: 0% 50%;
+      transform: rotate(-5deg) scale(0.9);
     }
-  }}
+  }
+}
 
 :root {
   --radius: 0.625rem;
@@ -151,6 +151,21 @@
 }
 
 @layer base {
+  :root {
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
   * {
     @apply border-border outline-ring/50;
   }
