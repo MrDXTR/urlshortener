@@ -11,16 +11,41 @@ import { Button } from "~/components/ui/button";
 import { useSession } from "next-auth/react";
 import { api } from "~/trpc/react";
 import Link from "next/link";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "~/components/ui/alert";
+
+// List of adult content patterns to block
+const adultContentPatterns = [
+  /porn/i, 
+  /xxx/i, 
+  /adult/i,
+  /sex/i,
+  /escort/i,
+  /nsfw/i
+];
+
+// Function to check if URL contains adult content
+const containsAdultContent = (url: string) => {
+  return adultContentPatterns.some(pattern => pattern.test(url));
+};
 
 // Form schema for authenticated users
 const AuthFormSchema = z.object({
-  longUrl: z.string().url({ message: "Please enter a valid URL" }),
+  longUrl: z.string()
+    .url({ message: "Please enter a valid URL" })
+    .refine(url => !containsAdultContent(url), {
+      message: "URLs containing adult content are not allowed"
+    }),
   customSlug: z.string().optional(),
 });
 
 // Form schema for anonymous users
 const GuestFormSchema = z.object({
-  longUrl: z.string().url({ message: "Please enter a valid URL" }),
+  longUrl: z.string()
+    .url({ message: "Please enter a valid URL" })
+    .refine(url => !containsAdultContent(url), {
+      message: "URLs containing adult content are not allowed"
+    }),
 });
 
 type AuthFormType = z.infer<typeof AuthFormSchema>;
@@ -31,6 +56,7 @@ export function UrlShortenerForm() {
   const [shortUrl, setShortUrl] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [origin, setOrigin] = useState("");
+  const [error, setError] = useState<string | null>(null);
   
   // Update origin on component mount
   useEffect(() => {
@@ -80,6 +106,7 @@ export function UrlShortenerForm() {
   const handleSuccess = (data: { slug: string }) => {
     const shortUrl = `${origin}/${data.slug}`;
     setShortUrl(shortUrl);
+    setError(null);
     toast.success("URL shortened successfully!", {
       description: shortUrl,
     });
@@ -88,6 +115,7 @@ export function UrlShortenerForm() {
   };
 
   const handleError = (error: { message: string }) => {
+    setError(error.message);
     toast.error("Error shortening URL", {
       description: error.message,
     });
@@ -98,6 +126,7 @@ export function UrlShortenerForm() {
   const onAuthSubmit = (values: AuthFormType) => {
     setIsCreating(true);
     setShortUrl(null);
+    setError(null);
     
     createUrl.mutate({
       url: values.longUrl,
@@ -109,6 +138,7 @@ export function UrlShortenerForm() {
   const onGuestSubmit = (values: GuestFormType) => {
     setIsCreating(true);
     setShortUrl(null);
+    setError(null);
     
     createAnonUrl.mutate({
       url: values.longUrl,
@@ -124,6 +154,13 @@ export function UrlShortenerForm() {
 
   return (
     <div className="space-y-6 w-full max-w-md mx-auto">
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      
       {session ? (
         // Authenticated user form with custom slug option
         <Form {...authForm}>
@@ -154,17 +191,24 @@ export function UrlShortenerForm() {
                 <FormItem className="space-y-2">
                   <FormLabel className="text-sm font-medium">Custom URL slug (optional)</FormLabel>
                   <div className="flex items-center">
-                   
+                    <div className="flex-shrink-0 bg-muted/50 text-muted-foreground px-3 py-2 text-sm border border-r-0 rounded-l-md border-primary/20">
+                      {origin}/
+                    </div>
                     <FormControl>
                       <Input
                         placeholder="my-custom-url"
                         autoComplete="off"
-                        className="w-full border-primary/20 focus-visible:ring-primary/20"
+                        className="w-full rounded-l-none border-primary/20 focus-visible:ring-primary/20"
                         {...field}
                       />
                     </FormControl>
                   </div>
                   <FormMessage className="text-xs" />
+                  {field.value && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Preview: {origin}/{field.value}
+                    </p>
+                  )}
                 </FormItem>
               )}
             />
