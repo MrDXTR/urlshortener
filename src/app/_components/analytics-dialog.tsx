@@ -15,7 +15,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "~/components/
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "~/components/ui/table";
 import { Badge } from "~/components/ui/badge";
-import { CalendarIcon, ArrowUpIcon } from "lucide-react";
+import { CalendarIcon, ArrowUpIcon, TrendingUpIcon, LinkIcon } from "lucide-react";
 
 interface AnalyticsDialogProps {
   open: boolean;
@@ -46,41 +46,62 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl h-auto max-h-[90vh] md:max-h-[85vh] p-0">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden md:max-h-[85vh] p-0">
         {/* Header Section with Stats */}
-        <div className="bg-muted/40 p-6 border-b  overflow-auto">
+        <div className="bg-muted/40 p-6 border-b">
           <DialogTitle className="text-xl mb-2">URL Analytics</DialogTitle>
           <DialogDescription>
             Track performance of your shortened URLs
           </DialogDescription>
           
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-            <div className="bg-background rounded-lg p-3 shadow-sm">
-              <div className="text-muted-foreground text-xs mb-1">Total URLs</div>
-              <div className="text-2xl font-bold">{userStats?.totalUrls || 0}</div>
+            <div className="bg-card rounded-lg p-4 shadow-sm border border-border">
+              <div className="flex items-center">
+                <div className="p-2 rounded-full bg-primary/10 mr-3">
+                  <LinkIcon className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <div className="text-muted-foreground text-xs mb-1">Total URLs</div>
+                  <div className="text-2xl font-bold">{userStats?.totalUrls || 0}</div>
+                </div>
+              </div>
             </div>
             
-            <div className="bg-background rounded-lg p-3 shadow-sm">
-              <div className="text-muted-foreground text-xs mb-1">Total Clicks</div>
-              <div className="text-2xl font-bold">{userStats?.totalClicks || 0}</div>
+            <div className="bg-card rounded-lg p-4 shadow-sm border border-border">
+              <div className="flex items-center">
+                <div className="p-2 rounded-full bg-primary/10 mr-3">
+                  <TrendingUpIcon className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <div className="text-muted-foreground text-xs mb-1">Total Clicks</div>
+                  <div className="text-2xl font-bold">{userStats?.totalClicks || 0}</div>
+                </div>
+              </div>
             </div>
             
-            <div className="bg-background rounded-lg p-3 shadow-sm">
-              <div className="text-muted-foreground text-xs mb-1">Avg. Per URL</div>
-              <div className="text-2xl font-bold">
-                {userStats?.totalUrls && userStats.totalUrls > 0 
-                  ? (userStats.totalClicks / userStats.totalUrls).toFixed(1) 
-                  : 0}
+            <div className="bg-card rounded-lg p-4 shadow-sm border border-border">
+              <div className="flex items-center">
+                <div className="p-2 rounded-full bg-primary/10 mr-3">
+                  <ArrowUpIcon className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <div className="text-muted-foreground text-xs mb-1">Avg. Per URL</div>
+                  <div className="text-2xl font-bold">
+                    {userStats?.totalUrls && userStats.totalUrls > 0 
+                      ? (userStats.totalClicks / userStats.totalUrls).toFixed(1) 
+                      : 0}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
         
         {/* Main Content - Scrollable */}
-        <div className="p-6 overflow-y-auto" style={{ maxHeight: "calc(85vh - 180px)" }}>
+        <div className="p-6 overflow-y-auto flex-1" style={{ maxHeight: "calc(85vh - 180px)" }}>
           <div className="space-y-6">
             {/* Chart Section */}
-            <Card>
+            <Card className="border border-border">
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center">
                   <ArrowUpIcon className="mr-2 h-4 w-4 text-primary" />
@@ -94,7 +115,7 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
                       config={{
                         clicks: {
                           label: "Clicks",
-                          color: "hsl(var(--chart-2))"
+                          color: "var(--color-chart-1)"
                         }
                       }}
                     >
@@ -104,7 +125,7 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
                           layout="vertical" 
                           margin={{ top: 5, right: 25, left: 5, bottom: 5 }}
                         >
-                          <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+                          <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="var(--color-border)" />
                           <XAxis
                             type="number"
                             tick={{ fontSize: 12 }}
@@ -135,7 +156,7 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
                           <Bar
                             dataKey="clicks"
                             name="clicks"
-                            fill="hsl(var(--chart-1))"
+                            fill="var(--color-chart-1)"
                             radius={[0, 4, 4, 0]}
                           />
                         </BarChart>
@@ -153,7 +174,7 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
             </Card>
             
             {/* Table Section */}
-            <Card>
+            <Card className="mb-5 border border-border">
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center">
                   <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
@@ -174,9 +195,9 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
                       </TableHeader>
                       <TableBody>
                         {userUrls.map(url => (
-                          <TableRow key={url.id}>
+                          <TableRow key={url.id} className="hover:bg-muted/50">
                             <TableCell>
-                              <Badge variant="outline" className="font-mono">
+                              <Badge variant="outline" className="font-mono bg-secondary/30">
                                 {url.slug}
                               </Badge>
                             </TableCell>
@@ -194,7 +215,7 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
                               {new Date(url.createdAt).toLocaleDateString()}
                             </TableCell>
                             <TableCell className="text-right font-medium">
-                              {url.clicks}
+                              <Badge variant="secondary">{url.clicks}</Badge>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -220,4 +241,4 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
       </DialogContent>
     </Dialog>
   );
-} 
+}
