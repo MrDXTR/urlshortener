@@ -23,8 +23,8 @@ export default async function Home() {
       {/* Header */}
       <header className="bg-background/80 border-border fixed top-0 z-50 w-full border-b backdrop-blur">
         <div className="flex h-16 items-center justify-between px-4">
-          <h1 className="text-xl font-bold">
-            <HyperText>URL Shortener</HyperText>
+          <h1 className="text-2xl font-bold">
+            URL Shortener
           </h1>
           <div className="flex items-center gap-4">
             {session ? (

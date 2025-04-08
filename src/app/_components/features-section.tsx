@@ -37,7 +37,7 @@ export function FeaturesSection() {
                 {feature.description}
               </p>
             </CardContent>
-            <Meteors number={feature.meteorCount} />
+         
           </Card>
         ))}
       </div>
