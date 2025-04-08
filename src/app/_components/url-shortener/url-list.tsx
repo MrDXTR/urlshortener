@@ -34,7 +34,7 @@ export function UserUrlList() {
   if (!urls || urls.length === 0) {
     return (
       <p className="text-muted-foreground py-4 text-center">
-        You haven't created any shortened URLs yet.
+        You haven&apos;t created any shortened URLs yet.
       </p>
     );
   }
