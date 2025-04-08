@@ -15,7 +15,6 @@ import { FeaturesSection } from "./_components/features-section";
 import { UrlListSheet } from "./_components/url-list-sheet";
 import { AuroraText } from "~/components/magicui/aurora-text";
 import { ProfileDropdown } from "./_components/profileinfo";
-import { AnalyticsButton } from "./_components/analytics-button";
 import Image from "next/image";
 
 export default async function Home() {
@@ -38,7 +37,6 @@ export default async function Home() {
             {session ? (
               <>
                 <UrlListSheet />
-                <AnalyticsButton />
                 {session.user?.image && (
                   <ProfileDropdown 
                     imageUrl={session.user.image} 
@@ -105,7 +103,7 @@ export default async function Home() {
         <FeaturesSection />
       </main>
 
-      {/* Footer */}
+    
       <footer className="border-border bg-muted/20 backdrop-blur border-t py-6">
         <div className="text-muted-foreground px-4 text-center text-sm">
           <p>

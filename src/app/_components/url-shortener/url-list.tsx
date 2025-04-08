@@ -6,8 +6,6 @@ import { Copy, CheckIcon, ExternalLinkIcon, TrendingUpIcon } from "lucide-react"
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { api } from "~/trpc/react";
-import { AuroraText } from "~/components/magicui/aurora-text";
-import { AnalyticsDialog } from "../analytics-dialog";
 
 export function UserUrlList() {
   const { data: urls, isLoading } = api.url.getUserUrls.useQuery();
@@ -97,7 +95,7 @@ export function UserUrlList() {
                 <ExternalLinkIcon className="h-4 w-4" />
               </a>
             </Button>
-            <AnalyticsDialog slug={url.slug} totalClicks={url.clicks} />
+            
           </div>
         </div>
       ))}

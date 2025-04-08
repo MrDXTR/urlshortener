@@ -16,7 +16,12 @@ import { UserUrlList } from "./url-shortener/url-list";
 import { Separator } from "~/components/ui/separator";
 import { ShineBorder } from "~/components/magicui/shine-border";
 
-export function UrlListSheet() {
+interface UrlListSheetProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function UrlListSheet({ open, onOpenChange }: UrlListSheetProps = {}) {
   const { data: session } = useSession();
 
   if (!session?.user) {
@@ -24,7 +29,7 @@ export function UrlListSheet() {
   }
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="sm" className="gap-2 bg-primary/10 hover:bg-primary/20 transition-colors relative">
           <LinkIcon className="h-4 w-4 text-primary" />
