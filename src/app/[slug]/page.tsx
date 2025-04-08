@@ -20,7 +20,7 @@ export default async function SlugPage({
     for (const [key, value] of headersList.entries()) {
       headersObj.set(key, value);
     }
-    
+
     const ctx = await createTRPCContext({ headers: headersObj });
     const caller = createCaller(ctx);
     const url = await caller.url.getBySlug({ slug });
@@ -28,13 +28,11 @@ export default async function SlugPage({
     console.log(`Redirecting ${slug} to ${url.longUrl}`);
     redirect(url.longUrl);
   } catch (error) {
- 
-    if (error instanceof Error && error.message.includes('NEXT_REDIRECT')) {
-
+    if (error instanceof Error && error.message.includes("NEXT_REDIRECT")) {
       throw error;
     }
-    
+
     console.error(`Error processing slug ${slug}:`, error);
     return { notFound: true };
   }
-} 
+}

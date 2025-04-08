@@ -13,6 +13,7 @@ import {
 import { UrlShortener } from "./_components/url-shortener";
 import { FeaturesSection } from "./_components/features-section";
 import { UrlListSheet } from "./_components/url-list-sheet";
+import Image from "next/image";
 
 export default async function Home() {
   const session = await auth();
@@ -21,7 +22,7 @@ export default async function Home() {
     <div className="flex min-h-screen flex-col">
       {/* Header */}
       <header className="bg-background/80 border-border fixed top-0 z-50 w-full border-b backdrop-blur">
-        <div className="container flex h-16 items-center justify-between px-4">
+        <div className="flex h-16 items-center justify-between px-4">
           <h1 className="text-xl font-bold">
             <HyperText>URL Shortener</HyperText>
           </h1>
@@ -29,6 +30,15 @@ export default async function Home() {
             {session ? (
               <>
                 <UrlListSheet />
+                {session.user?.image && (
+                  <Image
+                    src={session.user?.image}
+                    height={32}
+                    width={32}
+                    alt="Profile"
+                    className="h-8 w-8 rounded-full"
+                  />
+                )}
                 <Link
                   href="/api/auth/signout"
                   className="text-muted-foreground hover:text-foreground text-sm transition-colors"
@@ -50,7 +60,7 @@ export default async function Home() {
       </header>
 
       {/* Main content */}
-      <main className="relative container flex flex-1 flex-col items-center justify-center gap-8 px-4 pt-24 pb-16">
+      <main className="relative flex flex-1 flex-col items-center justify-center gap-8 px-4 pt-24 pb-16">
         <div className="w-full max-w-md space-y-2 text-center">
           <h2 className="text-4xl font-bold tracking-tight">
             Shorten your{" "}
@@ -87,7 +97,7 @@ export default async function Home() {
 
       {/* Footer */}
       <footer className="border-border bg-muted/20 border-t py-6">
-        <div className="text-muted-foreground container px-4 text-center text-sm">
+        <div className="text-muted-foreground px-4 text-center text-sm">
           <p>
             © {new Date().getFullYear()} URL Shortener. All rights reserved.
           </p>
