@@ -32,7 +32,7 @@ const containsAdultContent = (url: string) => {
 // Form schema for authenticated users
 const AuthFormSchema = z.object({
   longUrl: z.string()
-    .url({ message: "Please enter a valid URL" })
+    .min(1, { message: "URL is required" })
     .refine(url => !containsAdultContent(url), {
       message: "URLs containing adult content are not allowed"
     }),
@@ -42,7 +42,7 @@ const AuthFormSchema = z.object({
 // Form schema for anonymous users
 const GuestFormSchema = z.object({
   longUrl: z.string()
-    .url({ message: "Please enter a valid URL" })
+    .min(1, { message: "URL is required" })
     .refine(url => !containsAdultContent(url), {
       message: "URLs containing adult content are not allowed"
     }),
@@ -64,12 +64,13 @@ export function UrlShortenerForm() {
   }, []);
 
   // Form for authenticated users (with custom slug)
-  const authForm = useForm<AuthFormType>({
+  const authForm = useForm<z.infer<typeof AuthFormSchema>>({
     resolver: zodResolver(AuthFormSchema),
     defaultValues: {
       longUrl: "",
       customSlug: "",
     },
+    mode: "onSubmit", // Only validate on submit, not while typing
   });
   
   // Form for guest users (without custom slug)
@@ -78,6 +79,7 @@ export function UrlShortenerForm() {
     defaultValues: {
       longUrl: "",
     },
+    mode: "onSubmit", // Only validate on submit, not while typing
   });
 
   // Determine which form to use
@@ -107,9 +109,21 @@ export function UrlShortenerForm() {
     const shortUrl = `${origin}/${data.slug}`;
     setShortUrl(shortUrl);
     setError(null);
-    toast.success("URL shortened successfully!", {
-      description: shortUrl,
-    });
+    
+    // Automatically copy to clipboard
+    navigator.clipboard.writeText(shortUrl)
+      .then(() => {
+        toast.success("URL shortened and copied to clipboard!", {
+          description: shortUrl,
+        });
+      })
+      .catch(() => {
+        // Fall back to regular success message if clipboard access fails
+        toast.success("URL shortened successfully!", {
+          description: shortUrl,
+        });
+      });
+      
     form.reset();
     setIsCreating(false);
   };
@@ -123,7 +137,7 @@ export function UrlShortenerForm() {
   };
 
   // Handle form submission for authenticated users
-  const onAuthSubmit = (values: AuthFormType) => {
+  const onAuthSubmit = (values: z.infer<typeof AuthFormSchema>) => {
     setIsCreating(true);
     setShortUrl(null);
     setError(null);
@@ -152,6 +166,40 @@ export function UrlShortenerForm() {
     });
   };
 
+  // Try uncontrolled inputs as a backup solution
+  const [longUrlInput, setLongUrlInput] = useState("");
+  const [customSlugInput, setCustomSlugInput] = useState("");
+
+  // Handle manual form submission without react-hook-form
+  const handleManualSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!longUrlInput) {
+      setError("URL is required");
+      return;
+    }
+
+    if (containsAdultContent(longUrlInput)) {
+      setError("URLs containing adult content are not allowed");
+      return;
+    }
+
+    setIsCreating(true);
+    setShortUrl(null);
+    setError(null);
+    
+    if (session) {
+      createUrl.mutate({
+        url: longUrlInput,
+        customSlug: customSlugInput || undefined,
+      });
+    } else {
+      createAnonUrl.mutate({
+        url: longUrlInput,
+      });
+    }
+  };
+
   return (
     <div className="space-y-6 w-full max-w-md mx-auto">
       {error && (
@@ -161,100 +209,50 @@ export function UrlShortenerForm() {
         </Alert>
       )}
       
-      {session ? (
-        // Authenticated user form with custom slug option
-        <Form {...authForm}>
-          <form onSubmit={authForm.handleSubmit(onAuthSubmit)} className="space-y-5">
-            <FormField
-              control={authForm.control}
-              name="longUrl"
-              render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel className="text-sm font-medium">URL to shorten</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="https://example.com/very/long/url"
-                      autoComplete="off"
-                      className="w-full border-primary/20 focus-visible:ring-primary/20"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-xs" />
-                </FormItem>
-              )}
-            />
+      {/* Using simple form controls instead of react-hook-form to avoid validation issues */}
+      <form onSubmit={handleManualSubmit} className="space-y-5">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">URL to shorten</label>
+          <Input
+            placeholder="https://example.com/very/long/url"
+            autoComplete="off"
+            className="w-full border-primary/20 focus-visible:ring-primary/20"
+            value={longUrlInput}
+            onChange={(e) => setLongUrlInput(e.target.value)}
+          />
+        </div>
 
-            <FormField
-              control={authForm.control}
-              name="customSlug"
-              render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel className="text-sm font-medium">Custom URL slug (optional)</FormLabel>
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-muted/50 text-muted-foreground px-3 py-2 text-sm border border-r-0 rounded-l-md border-primary/20">
-                      {origin}/
-                    </div>
-                    <FormControl>
-                      <Input
-                        placeholder="my-custom-url"
-                        autoComplete="off"
-                        className="w-full rounded-l-none border-primary/20 focus-visible:ring-primary/20"
-                        {...field}
-                      />
-                    </FormControl>
-                  </div>
-                  <FormMessage className="text-xs" />
-                  {field.value && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Preview: {origin}/{field.value}
-                    </p>
-                  )}
-                </FormItem>
-              )}
-            />
+        {session && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Custom URL slug (optional)</label>
+            <div className="flex items-center">
+              <div className="flex-shrink-0 bg-muted/50 text-muted-foreground px-3 py-2 text-sm border border-r-0 rounded-l-md border-primary/20">
+                {origin}/
+              </div>
+              <Input
+                placeholder="my-custom-url"
+                autoComplete="off"
+                className="w-full rounded-l-none border-primary/20 focus-visible:ring-primary/20"
+                value={customSlugInput}
+                onChange={(e) => setCustomSlugInput(e.target.value)}
+              />
+            </div>
+            {customSlugInput && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Preview: {origin}/{customSlugInput}
+              </p>
+            )}
+          </div>
+        )}
 
-            <Button
-              type="submit"
-              className="w-full bg-primary/90 hover:bg-primary transition-colors"
-              disabled={isCreating}
-            >
-              {isCreating ? "Creating..." : "Shorten URL"}
-            </Button>
-          </form>
-        </Form>
-      ) : (
-        // Guest user form without custom slug
-        <Form {...guestForm}>
-          <form onSubmit={guestForm.handleSubmit(onGuestSubmit)} className="space-y-5">
-            <FormField
-              control={guestForm.control}
-              name="longUrl"
-              render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel className="text-sm font-medium">URL to shorten</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="https://example.com/very/long/url"
-                      autoComplete="off"
-                      className="w-full border-primary/20 focus-visible:ring-primary/20"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-xs" />
-                </FormItem>
-              )}
-            />
-
-            <Button
-              type="submit"
-              className="w-full bg-primary/90 hover:bg-primary transition-colors"
-              disabled={isCreating}
-            >
-              {isCreating ? "Creating..." : "Shorten URL"}
-            </Button>
-          </form>
-        </Form>
-      )}
+        <Button
+          type="submit"
+          className="w-full bg-primary/90 hover:bg-primary transition-colors"
+          disabled={isCreating}
+        >
+          {isCreating ? "Creating..." : "Shorten URL"}
+        </Button>
+      </form>
 
       {shortUrl && (
         <div className="bg-muted/40 rounded-md border border-primary/20 p-4 shadow-sm">
