@@ -1,6 +1,5 @@
 "use client";
 
-import { Meteors } from "~/components/magicui/meteors";
 import { ShineBorder } from "~/components/magicui/shine-border";
 import { AuroraText } from "~/components/magicui/aurora-text";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -64,7 +63,6 @@ export function FeaturesSection() {
               </p>
             </CardContent>
 
-            <Meteors number={feature.meteorCount} className="opacity-40" />
           </Card>
         ))}
       </div>

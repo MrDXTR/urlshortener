@@ -12,9 +12,7 @@ import {
 import { UrlShortener } from "./_components/url-shortener";
 import { FeaturesSection } from "./_components/features-section";
 import { UrlListSheet } from "./_components/url-list-sheet";
-import { AuroraText } from "~/components/magicui/aurora-text";
 import { ProfileDropdown } from "./_components/profileinfo";
-import Image from "next/image";
 import { FaGithub } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
 
