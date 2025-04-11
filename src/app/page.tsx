@@ -4,7 +4,6 @@ import Link from "next/link";
 import { auth } from "~/server/auth";
 import { ThemeToggle } from "./_components/theme-toggle";
 import { BorderBeam } from "~/components/magicui/border-beam";
-import { InteractiveGridPattern } from "~/components/magicui/interactive-grid-pattern";
 import {
   Card,
   CardContent,
