@@ -5,7 +5,14 @@ import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from "~/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+  FormLabel,
+} from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { useSession } from "next-auth/react";
@@ -16,35 +23,37 @@ import { Alert, AlertDescription } from "~/components/ui/alert";
 
 // List of adult content patterns to block
 const adultContentPatterns = [
-  /porn/i, 
-  /xxx/i, 
+  /porn/i,
+  /xxx/i,
   /adult/i,
   /sex/i,
   /escort/i,
-  /nsfw/i
+  /nsfw/i,
 ];
 
 // Function to check if URL contains adult content
 const containsAdultContent = (url: string) => {
-  return adultContentPatterns.some(pattern => pattern.test(url));
+  return adultContentPatterns.some((pattern) => pattern.test(url));
 };
 
 // Form schema for authenticated users
 const AuthFormSchema = z.object({
-  longUrl: z.string()
+  longUrl: z
+    .string()
     .min(1, { message: "URL is required" })
-    .refine(url => !containsAdultContent(url), {
-      message: "URLs containing adult content are not allowed"
+    .refine((url) => !containsAdultContent(url), {
+      message: "URLs containing adult content are not allowed",
     }),
   customSlug: z.string().optional(),
 });
 
 // Form schema for anonymous users
 const GuestFormSchema = z.object({
-  longUrl: z.string()
+  longUrl: z
+    .string()
     .min(1, { message: "URL is required" })
-    .refine(url => !containsAdultContent(url), {
-      message: "URLs containing adult content are not allowed"
+    .refine((url) => !containsAdultContent(url), {
+      message: "URLs containing adult content are not allowed",
     }),
 });
 
@@ -57,7 +66,7 @@ export function UrlShortenerForm() {
   const [isCreating, setIsCreating] = useState(false);
   const [origin, setOrigin] = useState("");
   const [error, setError] = useState<string | null>(null);
-  
+
   // Update origin on component mount
   useEffect(() => {
     setOrigin(window.location.origin);
@@ -72,7 +81,7 @@ export function UrlShortenerForm() {
     },
     mode: "onSubmit", // Only validate on submit, not while typing
   });
-  
+
   // Form for guest users (without custom slug)
   const guestForm = useForm<GuestFormType>({
     resolver: zodResolver(GuestFormSchema),
@@ -109,9 +118,10 @@ export function UrlShortenerForm() {
     const shortUrl = `${origin}/${data.slug}`;
     setShortUrl(shortUrl);
     setError(null);
-    
+
     // Automatically copy to clipboard
-    navigator.clipboard.writeText(shortUrl)
+    navigator.clipboard
+      .writeText(shortUrl)
       .then(() => {
         toast.success("URL shortened and copied to clipboard!", {
           description: shortUrl,
@@ -123,7 +133,7 @@ export function UrlShortenerForm() {
           description: shortUrl,
         });
       });
-      
+
     form.reset();
     setIsCreating(false);
   };
@@ -141,19 +151,19 @@ export function UrlShortenerForm() {
     setIsCreating(true);
     setShortUrl(null);
     setError(null);
-    
+
     createUrl.mutate({
       url: values.longUrl,
       customSlug: values.customSlug,
     });
   };
-  
+
   // Handle form submission for guest users
   const onGuestSubmit = (values: GuestFormType) => {
     setIsCreating(true);
     setShortUrl(null);
     setError(null);
-    
+
     createAnonUrl.mutate({
       url: values.longUrl,
     });
@@ -173,7 +183,7 @@ export function UrlShortenerForm() {
   // Handle manual form submission without react-hook-form
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!longUrlInput) {
       setError("URL is required");
       return;
@@ -187,7 +197,7 @@ export function UrlShortenerForm() {
     setIsCreating(true);
     setShortUrl(null);
     setError(null);
-    
+
     if (session) {
       createUrl.mutate({
         url: longUrlInput,
@@ -201,14 +211,14 @@ export function UrlShortenerForm() {
   };
 
   return (
-    <div className="space-y-6 w-full max-w-md mx-auto">
+    <div className="mx-auto w-full max-w-md space-y-6">
       {error && (
         <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      
+
       {/* Using simple form controls instead of react-hook-form to avoid validation issues */}
       <form onSubmit={handleManualSubmit} className="space-y-5">
         <div className="space-y-2">
@@ -216,7 +226,7 @@ export function UrlShortenerForm() {
           <Input
             placeholder="https://example.com/very/long/url"
             autoComplete="off"
-            className="w-full border-primary/20 focus-visible:ring-primary/20"
+            className="border-primary/20 focus-visible:ring-primary/20 w-full"
             value={longUrlInput}
             onChange={(e) => setLongUrlInput(e.target.value)}
           />
@@ -224,21 +234,23 @@ export function UrlShortenerForm() {
 
         {session && (
           <div className="space-y-2">
-            <label className="text-sm font-medium">Custom URL slug (optional)</label>
+            <label className="text-sm font-medium">
+              Custom URL slug (optional)
+            </label>
             <div className="flex items-center">
-              <div className="flex-shrink-0 bg-muted/50 text-muted-foreground px-3 py-2 text-sm border border-r-0 rounded-l-md border-primary/20">
+              <div className="bg-muted/50 text-muted-foreground border-primary/20 flex-shrink-0 rounded-l-md border border-r-0 px-3 py-2 text-sm">
                 {origin}/
               </div>
               <Input
                 placeholder="my-custom-url"
                 autoComplete="off"
-                className="w-full rounded-l-none border-primary/20 focus-visible:ring-primary/20"
+                className="border-primary/20 focus-visible:ring-primary/20 w-full rounded-l-none"
                 value={customSlugInput}
                 onChange={(e) => setCustomSlugInput(e.target.value)}
               />
             </div>
             {customSlugInput && (
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-muted-foreground mt-1 text-xs">
                 Preview: {origin}/{customSlugInput}
               </p>
             )}
@@ -247,7 +259,7 @@ export function UrlShortenerForm() {
 
         <Button
           type="submit"
-          className="w-full bg-primary/90 hover:bg-primary transition-colors"
+          className="bg-primary/90 hover:bg-primary w-full transition-colors"
           disabled={isCreating}
         >
           {isCreating ? "Creating..." : "Shorten URL"}
@@ -255,14 +267,16 @@ export function UrlShortenerForm() {
       </form>
 
       {shortUrl && (
-        <div className="bg-muted/40 rounded-md border border-primary/20 p-4 shadow-sm">
+        <div className="bg-muted/40 border-primary/20 rounded-md border p-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <div className="flex-1 mr-3">
-              <p className="text-xs text-muted-foreground mb-1">Your shortened URL:</p>
+            <div className="mr-3 flex-1">
+              <p className="text-muted-foreground mb-1 text-xs">
+                Your shortened URL:
+              </p>
               <p className="text-sm font-medium break-all">{shortUrl}</p>
             </div>
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               variant="outline"
               className="border-primary/20 hover:bg-primary/10"
               onClick={copyToClipboard}
@@ -271,11 +285,15 @@ export function UrlShortenerForm() {
             </Button>
           </div>
           {!session && (
-            <div className="mt-3 pt-3 border-t border-primary/10">
-              <p className="text-xs text-muted-foreground">
-                <Link href="/api/auth/signin" className="text-primary hover:underline">
+            <div className="border-primary/10 mt-3 border-t pt-3">
+              <p className="text-muted-foreground text-xs">
+                <Link
+                  href="/api/auth/signin"
+                  className="text-primary hover:underline"
+                >
                   Sign in
-                </Link> to create custom URLs and track analytics.
+                </Link>{" "}
+                to create custom URLs and track analytics.
               </p>
             </div>
           )}

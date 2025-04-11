@@ -31,21 +31,28 @@ export function UrlListSheet({ open, onOpenChange }: UrlListSheetProps = {}) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2 bg-primary/10 hover:bg-primary/20 transition-colors relative">
-          <LinkIcon className="h-4 w-4 text-primary" />
+        <Button
+          variant="ghost"
+          size="sm"
+          className="bg-primary/10 hover:bg-primary/20 relative gap-2 transition-colors"
+        >
+          <LinkIcon className="text-primary h-4 w-4" />
           <span>My URLs</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="overflow-y-auto p-4 sm:max-w-md bg-card/90 backdrop-blur-sm">
+      <SheetContent
+        side="right"
+        className="bg-card/90 overflow-y-auto p-4 backdrop-blur-sm sm:max-w-md"
+      >
         <div className="absolute inset-0">
-          <ShineBorder 
+          <ShineBorder
             borderWidth={1}
             duration={10}
             shineColor={["hsl(var(--primary))", "hsl(var(--secondary))"]}
             className="opacity-30"
           />
         </div>
-        
+
         <SheetHeader className="relative pb-2">
           <SheetTitle className="text-xl">Your Collection</SheetTitle>
           <SheetDescription>
@@ -53,14 +60,14 @@ export function UrlListSheet({ open, onOpenChange }: UrlListSheetProps = {}) {
           </SheetDescription>
         </SheetHeader>
 
-        <div className="my-6 relative">
+        <div className="relative my-6">
           <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-sm font-medium text-primary/90">Recent URLs</h3>
-            <span className="text-muted-foreground text-xs px-2 py-1 bg-primary/10 rounded-full">
+            <h3 className="text-primary/90 text-sm font-medium">Recent URLs</h3>
+            <span className="text-muted-foreground bg-primary/10 rounded-full px-2 py-1 text-xs">
               {session.user.name}
             </span>
           </div>
-          <Separator className="mb-4 bg-primary/20" />
+          <Separator className="bg-primary/20 mb-4" />
           <UserUrlList />
         </div>
       </SheetContent>

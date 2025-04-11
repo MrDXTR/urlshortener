@@ -11,19 +11,19 @@ export function FeaturesSection() {
       title: "Lightning Fast",
       description: "Optimized for speed with minimal load times.",
       meteorCount: 8,
-      colors: ["#FF0080", "#7928CA"]
+      colors: ["#FF0080", "#7928CA"],
     },
     {
       title: "Secure",
       description: "Your links are safe and protected with us.",
       meteorCount: 15,
-      colors: ["#0070F3", "#00CFFD"]
+      colors: ["#0070F3", "#00CFFD"],
     },
     {
       title: "Analytics",
       description: "Track your link performance over time.",
       meteorCount: 10,
-      colors: ["#00CC88", "#10B981"]
+      colors: ["#00CC88", "#10B981"],
     },
   ];
 
@@ -35,17 +35,17 @@ export function FeaturesSection() {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         {features.map((feature, i) => (
-          <Card 
-            key={i} 
+          <Card
+            key={i}
             className="border-primary/20 relative overflow-hidden transition-all duration-300 hover:shadow-lg"
           >
-            <ShineBorder 
+            <ShineBorder
               borderWidth={2}
               duration={8}
               shineColor={feature.colors}
-              className="opacity-30 hover:opacity-70 transition-opacity duration-300"
+              className="opacity-30 transition-opacity duration-300 hover:opacity-70"
             />
-            
+
             <CardHeader>
               <CardTitle>
                 <AuroraText
@@ -57,17 +57,14 @@ export function FeaturesSection() {
                 </AuroraText>
               </CardTitle>
             </CardHeader>
-            
+
             <CardContent>
               <p className="text-muted-foreground text-sm">
                 {feature.description}
               </p>
             </CardContent>
-            
-            <Meteors
-              number={feature.meteorCount}
-              className="opacity-40"
-            />
+
+            <Meteors number={feature.meteorCount} className="opacity-40" />
           </Card>
         ))}
       </div>

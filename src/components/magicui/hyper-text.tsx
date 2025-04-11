@@ -2,7 +2,7 @@
 
 import { cn } from "~/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
-import type   { MotionProps } from "motion/react";
+import type { MotionProps } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
 type CharacterSet = string[] | readonly string[];
@@ -103,8 +103,8 @@ export function HyperText({
             letter === " "
               ? letter
               : index <= iterationCount.current
-                ? children[index] ?? " "
-                : characterSet[getRandomInt(characterSet.length)] ?? " ",
+                ? (children[index] ?? " ")
+                : (characterSet[getRandomInt(characterSet.length)] ?? " "),
           ),
         );
         iterationCount.current = iterationCount.current + 0.1;

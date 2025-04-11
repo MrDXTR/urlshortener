@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Copy, CheckIcon, ExternalLinkIcon, TrendingUpIcon } from "lucide-react";
+import {
+  Copy,
+  CheckIcon,
+  ExternalLinkIcon,
+  TrendingUpIcon,
+} from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { api } from "~/trpc/react";
@@ -25,19 +30,21 @@ export function UserUrlList() {
 
   if (isLoading) {
     return (
-      <div className="py-8 flex justify-center items-center">
-        <div className="h-8 w-8 rounded-full border-2 border-primary/50 border-t-transparent animate-spin" />
+      <div className="flex items-center justify-center py-8">
+        <div className="border-primary/50 h-8 w-8 animate-spin rounded-full border-2 border-t-transparent" />
       </div>
     );
   }
 
   if (!urls || urls.length === 0) {
     return (
-      <div className="py-8 text-center rounded-lg border border-dashed border-primary/30 p-6">
+      <div className="border-primary/30 rounded-lg border border-dashed p-6 py-8 text-center">
         <p className="text-muted-foreground mb-2">
           You haven&apos;t created any shortened URLs yet.
         </p>
-        <p className="text-xs text-primary/70">Create your first shortened URL to see it here!</p>
+        <p className="text-primary/70 text-xs">
+          Create your first shortened URL to see it here!
+        </p>
       </div>
     );
   }
@@ -47,16 +54,19 @@ export function UserUrlList() {
       {urls.map((url) => (
         <div
           key={url.id}
-          className="bg-card/70 hover:bg-card/90 flex items-center justify-between rounded-md border border-primary/20 p-4 transition-all hover:shadow-md relative overflow-hidden group"
+          className="bg-card/70 hover:bg-card/90 border-primary/20 group relative flex items-center justify-between overflow-hidden rounded-md border p-4 transition-all hover:shadow-md"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          
-          <div className="flex flex-col relative">
+          <div className="from-primary/5 to-secondary/5 absolute inset-0 bg-gradient-to-r opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+          <div className="relative flex flex-col">
             <div className="mb-1 flex items-center gap-2">
-              <Badge variant="outline" className="bg-primary/10 hover:bg-primary/20 transition-colors">
+              <Badge
+                variant="outline"
+                className="bg-primary/10 hover:bg-primary/20 transition-colors"
+              >
                 {url.slug}
               </Badge>
-              <div className="flex items-center gap-1 text-xs text-primary/60">
+              <div className="text-primary/60 flex items-center gap-1 text-xs">
                 <TrendingUpIcon className="h-3 w-3" />
                 <span>{url.clicks}</span>
               </div>
@@ -65,13 +75,13 @@ export function UserUrlList() {
               {url.longUrl}
             </span>
           </div>
-          
-          <div className="flex gap-1 relative">
+
+          <div className="relative flex gap-1">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => copyToClipboard(url.id, url.slug)}
-              className="h-8 w-8 hover:bg-primary/10 transition-colors"
+              className="hover:bg-primary/10 h-8 w-8 transition-colors"
             >
               {copiedId === url.id ? (
                 <CheckIcon className="h-4 w-4 text-green-500" />
@@ -80,10 +90,10 @@ export function UserUrlList() {
               )}
               <span className="sr-only">Copy URL</span>
             </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8 hover:bg-primary/10 transition-colors" 
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:bg-primary/10 h-8 w-8 transition-colors"
               asChild
             >
               <a
@@ -95,7 +105,6 @@ export function UserUrlList() {
                 <ExternalLinkIcon className="h-4 w-4" />
               </a>
             </Button>
-            
           </div>
         </div>
       ))}

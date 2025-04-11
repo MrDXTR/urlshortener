@@ -1,5 +1,3 @@
-  
-
 import Link from "next/link";
 import { auth } from "~/server/auth";
 import { ThemeToggle } from "./_components/theme-toggle";
@@ -26,36 +24,30 @@ export default async function Home() {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Background Effects */}
-      <div className="fixed inset-0 -z-10 bg-gradient-to-b from-background via-background/90 to-background/80"></div>
-      
+      <div className="from-background via-background/90 to-background/80 fixed inset-0 -z-10 bg-gradient-to-b"></div>
+
       {/* Header */}
       <header className="bg-background/80 border-border fixed top-0 z-50 w-full border-b backdrop-blur">
         <div className="flex h-16 items-center justify-between px-4">
-         
-          <h1 className="text-2xl font-bold">
-           URL Shortener
-          </h1>
+          <h1 className="text-2xl font-bold">URL Shortener</h1>
           <div className="flex items-center gap-4">
             <Link
               href="https://github.com/MrDXTR/urlshortener"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Button
-                variant="outline"
-                size="icon"
-              >
+              <Button variant="outline" size="icon">
                 <FaGithub className="h-5 w-5" />
               </Button>
             </Link>
-           
+
             {session ? (
               <>
                 <UrlListSheet />
                 {session.user?.image && (
-                  <ProfileDropdown 
-                    imageUrl={session.user.image} 
-                    name={session.user.name || "User"} 
+                  <ProfileDropdown
+                    imageUrl={session.user.image}
+                    name={session.user.name || "User"}
                     email={session.user.email || ""}
                   />
                 )}
@@ -63,12 +55,12 @@ export default async function Home() {
             ) : (
               <Link
                 href="/api/auth/signin"
-                className="text-primary hover:text-primary/90 bg-primary/10 hover:bg-primary/20 text-sm transition-colors px-3 py-1.5 rounded-md"
+                className="text-primary hover:text-primary/90 bg-primary/10 hover:bg-primary/20 rounded-md px-3 py-1.5 text-sm transition-colors"
               >
                 Sign in to save URLs
               </Link>
             )}
-          
+
             <ThemeToggle />
           </div>
         </div>
@@ -88,8 +80,8 @@ export default async function Home() {
           </p>
         </div>
 
-        <div className="w-full max-w-md relative mx-auto">
-          <Card className="bg-card/80 backdrop-blur relative overflow-hidden border-primary/20 shadow-md">
+        <div className="relative mx-auto w-full max-w-md">
+          <Card className="bg-card/80 border-primary/20 relative overflow-hidden shadow-md backdrop-blur">
             <BorderBeam
               size={40}
               colorFrom="hsl(var(--primary))"
@@ -101,8 +93,11 @@ export default async function Home() {
               <CardDescription>
                 Enter a long URL to create a shortened version
                 {!session && (
-                  <span className="block mt-1 text-xs text-primary/70">
-                    <Link href="/api/auth/signin" className="underline hover:text-primary">
+                  <span className="text-primary/70 mt-1 block text-xs">
+                    <Link
+                      href="/api/auth/signin"
+                      className="hover:text-primary underline"
+                    >
                       Sign in
                     </Link>{" "}
                     to keep track of your shortened URLs
@@ -119,8 +114,7 @@ export default async function Home() {
         <FeaturesSection />
       </main>
 
-    
-      <footer className="border-border bg-muted/20 backdrop-blur border-t py-6">
+      <footer className="border-border bg-muted/20 border-t py-6 backdrop-blur">
         <div className="text-muted-foreground px-4 text-center text-sm">
           <p>
             © {new Date().getFullYear()} URL Shortener. All rights reserved.

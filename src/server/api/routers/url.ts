@@ -10,25 +10,26 @@ import {
 
 // List of adult content patterns to block
 const adultContentPatterns = [
-  /porn/i, 
-  /xxx/i, 
+  /porn/i,
+  /xxx/i,
   /adult/i,
   /sex/i,
   /escort/i,
-  /nsfw/i
+  /nsfw/i,
 ];
 
 // Function to check if URL contains adult content
 const containsAdultContent = (url: string) => {
-  return adultContentPatterns.some(pattern => pattern.test(url));
+  return adultContentPatterns.some((pattern) => pattern.test(url));
 };
 
 // Validation schema for URLs
-const urlSchema = z.string()
+const urlSchema = z
+  .string()
   .url()
   .min(1)
-  .refine(url => !containsAdultContent(url), {
-    message: "URLs containing adult content are not allowed"
+  .refine((url) => !containsAdultContent(url), {
+    message: "URLs containing adult content are not allowed",
   });
 
 export const urlRouter = createTRPCRouter({
@@ -51,7 +52,7 @@ export const urlRouter = createTRPCRouter({
         if (existing) {
           throw new TRPCError({
             code: "CONFLICT",
-            message: "Custom slug already taken"
+            message: "Custom slug already taken",
           });
         }
 
@@ -64,17 +65,17 @@ export const urlRouter = createTRPCRouter({
         });
       } catch (error) {
         console.error("Error creating shortened URL:", error);
-        
+
         // Re-throw TRPCError instances
         if (error instanceof TRPCError) {
           throw error;
         }
-        
+
         // Convert other errors to TRPCError
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to create shortened URL",
-          cause: error
+          cause: error,
         });
       }
     }),
@@ -98,19 +99,19 @@ export const urlRouter = createTRPCRouter({
         if (existing) {
           // Try again with a new slug
           const newSlug = nanoid(7);
-          
+
           // Double-check the new slug doesn't exist
           const newSlugExists = await ctx.db.shortenedURL.findUnique({
             where: { slug: newSlug },
           });
-          
+
           if (newSlugExists) {
             throw new TRPCError({
               code: "INTERNAL_SERVER_ERROR",
-              message: "Failed to generate unique slug, please try again"
+              message: "Failed to generate unique slug, please try again",
             });
           }
-          
+
           return ctx.db.shortenedURL.create({
             data: {
               slug: newSlug,
@@ -129,17 +130,17 @@ export const urlRouter = createTRPCRouter({
         });
       } catch (error) {
         console.error("Error creating anonymous shortened URL:", error);
-        
+
         // Re-throw TRPCError instances
         if (error instanceof TRPCError) {
           throw error;
         }
-        
+
         // Convert other errors to TRPCError
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to create shortened URL",
-          cause: error
+          cause: error,
         });
       }
     }),
@@ -155,7 +156,7 @@ export const urlRouter = createTRPCRouter({
         if (!url) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "URL not found"
+            message: "URL not found",
           });
         }
 
@@ -168,17 +169,17 @@ export const urlRouter = createTRPCRouter({
         return url;
       } catch (error) {
         console.error("Error getting URL by slug:", error);
-        
+
         // Re-throw TRPCError instances
         if (error instanceof TRPCError) {
           throw error;
         }
-        
+
         // Convert other errors to TRPCError
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to retrieve URL",
-          cause: error
+          cause: error,
         });
       }
     }),
@@ -191,17 +192,17 @@ export const urlRouter = createTRPCRouter({
       });
     } catch (error) {
       console.error("Error fetching user URLs:", error);
-      
+
       // Re-throw TRPCError instances
       if (error instanceof TRPCError) {
         throw error;
       }
-      
+
       // Convert other errors to TRPCError
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Failed to fetch user URLs",
-        cause: error
+        cause: error,
       });
     }
   }),
@@ -231,21 +232,21 @@ export const urlRouter = createTRPCRouter({
       };
     } catch (error) {
       console.error("Error fetching user stats:", error);
-      
+
       // Re-throw TRPCError instances
       if (error instanceof TRPCError) {
         throw error;
       }
-      
+
       // Convert other errors to TRPCError
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Failed to fetch user statistics",
-        cause: error
+        cause: error,
       });
     }
   }),
-  
+
   // Analytics endpoints
   getDailyClicksForUrl: protectedProcedure
     .input(z.object({ slug: z.string() }))
@@ -271,60 +272,56 @@ export const urlRouter = createTRPCRouter({
 
         // Return simple day-based data using the URL's click count
         // In a real app, you would have a separate analytics table tracking daily clicks
-        return [
-          { name: "Total Clicks", clicks: url.clicks }
-        ];
+        return [{ name: "Total Clicks", clicks: url.clicks }];
       } catch (error) {
         console.error("Error getting daily clicks:", error);
-        
+
         // Re-throw TRPCError instances
         if (error instanceof TRPCError) {
           throw error;
         }
-        
+
         // Convert other errors to TRPCError
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to fetch URL analytics",
-          cause: error
+          cause: error,
         });
       }
     }),
-    
+
   getMonthlyAnalytics: protectedProcedure.query(async ({ ctx }) => {
     try {
       const userId = ctx.session.user.id;
-      
+
       // Get user's URLs with actual counts
       const urls = await ctx.db.shortenedURL.findMany({
         where: { userId },
         orderBy: { createdAt: "desc" },
       });
-      
+
       const totalUrls = urls.length;
       const totalClicks = urls.reduce((sum, url) => sum + url.clicks, 0);
-      
+
       // Return simple analytics based on actual database metrics
-      return [
-        { name: "Your URLs", urls: totalUrls, clicks: totalClicks }
-      ];
+      return [{ name: "Your URLs", urls: totalUrls, clicks: totalClicks }];
     } catch (error) {
       console.error("Error getting monthly analytics:", error);
-      
+
       // Re-throw TRPCError instances
       if (error instanceof TRPCError) {
         throw error;
       }
-      
+
       // Convert other errors to TRPCError
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Failed to fetch monthly analytics",
-        cause: error
+        cause: error,
       });
     }
   }),
-  
+
   getTopReferrers: protectedProcedure
     .input(z.object({ slug: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -349,26 +346,24 @@ export const urlRouter = createTRPCRouter({
 
         // In a real app, you would track referrers in a separate table
         // For now, just return the total click count as "Direct" traffic
-        return [
-          { name: "Direct", clicks: url.clicks }
-        ];
+        return [{ name: "Direct", clicks: url.clicks }];
       } catch (error) {
         console.error("Error getting top referrers:", error);
-        
+
         // Re-throw TRPCError instances
         if (error instanceof TRPCError) {
           throw error;
         }
-        
+
         // Convert other errors to TRPCError
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to fetch referrer data",
-          cause: error
+          cause: error,
         });
       }
     }),
-    
+
   getLocationData: protectedProcedure
     .input(z.object({ slug: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -393,26 +388,24 @@ export const urlRouter = createTRPCRouter({
 
         // In a real app, you would track location data in a separate table
         // For now, just return the total click count as a single location
-        return [
-          { name: "All Regions", clicks: url.clicks }
-        ];
+        return [{ name: "All Regions", clicks: url.clicks }];
       } catch (error) {
         console.error("Error getting location data:", error);
-        
+
         // Re-throw TRPCError instances
         if (error instanceof TRPCError) {
           throw error;
         }
-        
+
         // Convert other errors to TRPCError
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to fetch location data",
-          cause: error
+          cause: error,
         });
       }
     }),
-    
+
   getDeviceData: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
 
@@ -425,11 +418,9 @@ export const urlRouter = createTRPCRouter({
     });
 
     const totalClicks = result._sum.clicks ?? 0;
-    
+
     // In a real app, you would track device data in a separate table
     // For now, just return the total click count
-    return [
-      { name: "All Devices", value: totalClicks }
-    ];
+    return [{ name: "All Devices", value: totalClicks }];
   }),
 });
