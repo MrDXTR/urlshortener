@@ -2,9 +2,10 @@ import "~/styles/globals.css";
 
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
+import { SessionProvider } from "next-auth/react";
+import { ThemeProvider } from "next-themes";
 
 import { TRPCReactProvider } from "~/trpc/react";
-import { Providers } from "~/app/_components/providers";
 
 export const metadata: Metadata = {
   title: "URL Shortener",
@@ -28,7 +29,11 @@ export default function RootLayout({
     >
       <body>
         <TRPCReactProvider>
-          <Providers>{children}</Providers>
+          <SessionProvider>
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+              {children}
+            </ThemeProvider>
+          </SessionProvider>
         </TRPCReactProvider>
       </body>
     </html>
