@@ -1,29 +1,116 @@
-# Create T3 App
+# URL Shortener
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+![URL Shortener Logo](/public/Logo.png)
 
-## What's next? How do I make an app with this?
+A modern, fast, and secure URL shortening service built with the T3 Stack.
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+## Features
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+- ✨ Create shortened URLs instantly
+- 🔒 User authentication for managing your links
+- 🔗 Custom slugs for registered users
+- 📊 Analytics for tracking link performance
+- 🚀 Fast redirects with minimal latency
+- 🛡️ Content filtering for safer browsing
+- 🌓 Light/Dark mode support
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+## Tech Stack
 
-## Learn More
+This project leverages the powerful T3 Stack:
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+- **Framework**: [Next.js](https://nextjs.org) (App Router)
+- **Authentication**: [NextAuth.js](https://next-auth.js.org)
+- **Database ORM**: [Prisma](https://prisma.io)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com)
+- **API Layer**: [tRPC](https://trpc.io)
+- **Type Safety**: [TypeScript](https://www.typescriptlang.org/)
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+## Getting Started
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+### Prerequisites
 
-## How do I deploy this?
+- Node.js (v18 or higher)
+- npm or yarn
+- PostgreSQL (recommended) or other database supported by Prisma
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+### Installation
+
+1. Clone the repository
+   ```bash
+   git clone https://github.com/yourusername/url-shortener.git
+   cd url-shortener
+   ```
+
+2. Install dependencies
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. Set up environment variables
+   ```bash
+   cp .env.example .env
+   # Edit .env with your database and authentication settings
+   ```
+
+4. Run database migrations
+   ```bash
+   npx prisma migrate dev
+   ```
+
+5. Start the development server
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+6. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## Usage
+
+1. **Create a shortened URL**: Enter a long URL in the input field
+2. **Track your links**: Sign in to view analytics for your shortened URLs
+3. **Customize slugs**: Create personalized, memorable links
+4. **Share**: Copy and share your shortened URLs anywhere
+
+## Deployment
+
+This application can be deployed on any platform that supports Next.js applications:
+
+- [Vercel](https://vercel.com) (Recommended)
+- [Netlify](https://netlify.com)
+- [Docker](https://www.docker.com/)
+
+Follow the platform-specific deployment guides for detailed instructions.
+
+## Project Structure
+
+- `/src/app` - Next.js App Router pages and layouts
+- `/src/app/_components` - React components for the UI
+- `/src/server` - Server-side code and API routes
+- `/src/server/api` - tRPC API endpoints
+- `/src/server/auth` - Authentication configuration
+- `/src/trpc` - tRPC client and server configuration
+- `/public` - Static assets like images and icons
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- [T3 Stack](https://create.t3.gg/) for the excellent project structure
+- [Vercel](https://vercel.com) for hosting and deployment solutions
+- All open-source contributors whose libraries make this project possible

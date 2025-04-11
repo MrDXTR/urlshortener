@@ -1,3 +1,5 @@
+  
+
 import Link from "next/link";
 import { auth } from "~/server/auth";
 import { ThemeToggle } from "./_components/theme-toggle";
@@ -16,6 +18,8 @@ import { UrlListSheet } from "./_components/url-list-sheet";
 import { AuroraText } from "~/components/magicui/aurora-text";
 import { ProfileDropdown } from "./_components/profileinfo";
 import Image from "next/image";
+import { FaGithub } from "react-icons/fa";
+import { Button } from "~/components/ui/button";
 
 export default async function Home() {
   const session = await auth();
@@ -28,12 +32,24 @@ export default async function Home() {
       {/* Header */}
       <header className="bg-background/80 border-border fixed top-0 z-50 w-full border-b backdrop-blur">
         <div className="flex h-16 items-center justify-between px-4">
+         
           <h1 className="text-2xl font-bold">
-            <AuroraText colors={["hsl(var(--primary))", "hsl(var(--secondary))"]} speed={0.7}>
-              URL Shortener
-            </AuroraText>
+           URL Shortener
           </h1>
           <div className="flex items-center gap-4">
+            <Link
+              href="https://github.com/MrDXTR/urlshortener"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button
+                variant="outline"
+                size="icon"
+              >
+                <FaGithub className="h-5 w-5" />
+              </Button>
+            </Link>
+           
             {session ? (
               <>
                 <UrlListSheet />
@@ -53,6 +69,7 @@ export default async function Home() {
                 Sign in to save URLs
               </Link>
             )}
+          
             <ThemeToggle />
           </div>
         </div>
