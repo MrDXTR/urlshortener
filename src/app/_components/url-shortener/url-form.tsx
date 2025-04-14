@@ -1,18 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-  FormLabel,
-} from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { useSession } from "next-auth/react";
@@ -20,50 +12,55 @@ import { api } from "~/trpc/react";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "~/components/ui/alert";
-import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
+import { validateUrl, normalizeUrl } from "~/lib/utils";
 
-// List of adult content patterns to block
-const adultContentPatterns = [
-  /porn/i,
-  /xxx/i,
-  /adult/i,
-  /sex/i,
-  /escort/i,
-  /nsfw/i,
-];
-
-// Function to check if URL contains adult content
-const containsAdultContent = (url: string) => {
-  return adultContentPatterns.some((pattern) => pattern.test(url));
-};
-
-// Form schema for authenticated users
+// Schema for authenticated users
 const AuthFormSchema = z.object({
   longUrl: z
     .string()
     .min(1, { message: "Please enter a URL" })
-    .url({ message: "Please enter a valid URL (e.g., https://example.com)" })
-    .refine((url) => !containsAdultContent(url), {
-      message: "This type of content is not allowed",
-    }),
+    .superRefine((url, ctx) => {
+      const validation = validateUrl(url);
+      if (!validation.isValid) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: validation.error || "Invalid URL",
+        });
+      }
+      return validation.isValid;
+    })
+    .transform((url) => normalizeUrl(url)),
   customSlug: z
     .string()
     .regex(/^[a-zA-Z0-9-_]*$/, {
-      message: "Custom slug can only contain letters, numbers, hyphens, and underscores",
+      message:
+        "Custom slug can only contain letters, numbers, hyphens, and underscores",
     })
     .max(50, { message: "Custom slug must be 50 characters or less" })
     .optional(),
 });
 
-// Form schema for anonymous users
+// Schema for guest users
 const GuestFormSchema = z.object({
   longUrl: z
     .string()
     .min(1, { message: "Please enter a URL" })
-    .url({ message: "Please enter a valid URL (e.g., https://example.com)" })
-    .refine((url) => !containsAdultContent(url), {
-      message: "This type of content is not allowed",
-    }),
+    .superRefine((url, ctx) => {
+      const validation = validateUrl(url);
+      if (!validation.isValid) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: validation.error || "Invalid URL",
+        });
+      }
+      return validation.isValid;
+    })
+    .transform((url) => normalizeUrl(url)),
 });
 
 type AuthFormType = z.infer<typeof AuthFormSchema>;
@@ -75,60 +72,80 @@ export function UrlShortenerForm() {
   const [isCreating, setIsCreating] = useState(false);
   const [origin, setOrigin] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [showAlert, setShowAlert] = useState(false);
+  const [longUrlInput, setLongUrlInput] = useState("");
+  const [customSlugInput, setCustomSlugInput] = useState("");
+  const [isValidUrl, setIsValidUrl] = useState<boolean | null>(null);
+  const [tooltipError, setTooltipError] = useState<string | null>(null);
+  const [isTyping, setIsTyping] = useState(false);
 
-  // Update origin on component mount
   useEffect(() => {
     setOrigin(window.location.origin);
   }, []);
 
-  // Form for authenticated users (with custom slug)
-  const authForm = useForm<z.infer<typeof AuthFormSchema>>({
+  // Debounces the URL validation
+  const debouncedValidateUrl = useCallback(
+    debounce((url: string) => {
+      if (!url) {
+        setIsValidUrl(null);
+        setTooltipError(null);
+        return;
+      }
+      const validation = validateUrl(url);
+      setIsValidUrl(validation.isValid);
+      setTooltipError(validation.error ?? null);
+      setIsTyping(false);
+    }, 500),
+    []
+  );
+
+  // Debounce function
+  function debounce<T extends (...args: any[]) => any>(
+    func: T,
+    wait: number
+  ) {
+    let timeout: NodeJS.Timeout | null = null;
+    return function (...args: Parameters<T>) {
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), wait);
+    };
+  }
+
+  const authForm = useForm<AuthFormType>({
     resolver: zodResolver(AuthFormSchema),
     defaultValues: {
       longUrl: "",
       customSlug: "",
     },
-    mode: "onSubmit", // Only validate on submit, not while typing
+    mode: "onSubmit",
   });
 
-  // Form for guest users (without custom slug)
   const guestForm = useForm<GuestFormType>({
     resolver: zodResolver(GuestFormSchema),
     defaultValues: {
       longUrl: "",
     },
-    mode: "onSubmit", // Only validate on submit, not while typing
+    mode: "onSubmit",
   });
 
-  // Determine which form to use
   const form = session ? authForm : guestForm;
 
-  // Mutation for authenticated users
   const createUrl = api.url.create.useMutation({
-    onSuccess: (data) => {
-      handleSuccess(data);
-    },
-    onError: (error) => {
-      handleError(error);
-    },
+    onSuccess: handleSuccess,
+    onError: handleError,
   });
 
-  // Mutation for anonymous users
   const createAnonUrl = api.url.createAnon.useMutation({
-    onSuccess: (data) => {
-      handleSuccess(data);
-    },
-    onError: (error) => {
-      handleError(error);
-    },
+    onSuccess: handleSuccess,
+    onError: handleError,
   });
 
-  const handleSuccess = (data: { slug: string }) => {
+  function handleSuccess(data: { slug: string }) {
     const shortUrl = `${origin}/${data.slug}`;
     setShortUrl(shortUrl);
     setError(null);
+    setShowAlert(false);
 
-    // Automatically copy to clipboard
     navigator.clipboard
       .writeText(shortUrl)
       .then(() => {
@@ -137,7 +154,6 @@ export function UrlShortenerForm() {
         });
       })
       .catch(() => {
-        // Fall back to regular success message if clipboard access fails
         toast.success("URL shortened successfully!", {
           description: shortUrl,
         });
@@ -145,88 +161,36 @@ export function UrlShortenerForm() {
 
     form.reset();
     setIsCreating(false);
-  };
+  }
 
-  const handleError = (error: { message: string }) => {
+  function handleError(error: { message: string }) {
     setError(error.message);
+    setShowAlert(true);
     toast.error("Error shortening URL", {
       description: error.message,
     });
     setIsCreating(false);
-  };
+  }
 
-  // Handle form submission for authenticated users
-  const onAuthSubmit = (values: z.infer<typeof AuthFormSchema>) => {
-    setIsCreating(true);
-    setShortUrl(null);
-    setError(null);
+  function validateUrlInput(url: string) {
+    setIsTyping(true);
+    debouncedValidateUrl(url);
+  }
 
-    createUrl.mutate({
-      url: values.longUrl,
-      customSlug: values.customSlug,
-    });
-  };
-
-  // Handle form submission for guest users
-  const onGuestSubmit = (values: GuestFormType) => {
-    setIsCreating(true);
-    setShortUrl(null);
-    setError(null);
-
-    createAnonUrl.mutate({
-      url: values.longUrl,
-    });
-  };
-
-  const copyToClipboard = () => {
-    if (!shortUrl) return;
-    navigator.clipboard.writeText(shortUrl).then(() => {
-      toast.success("Copied to clipboard!");
-    });
-  };
-
-  // Try uncontrolled inputs as a backup solution
-  const [longUrlInput, setLongUrlInput] = useState("");
-  const [customSlugInput, setCustomSlugInput] = useState("");
-  const [isValidUrl, setIsValidUrl] = useState<boolean | null>(null);
-
-  // Validate URL as user types
-  const validateUrl = (url: string) => {
-    if (!url) {
-      setIsValidUrl(null);
-      return;
-    }
-    try {
-      new URL(url);
-      setIsValidUrl(true);
-    } catch {
-      setIsValidUrl(false);
-    }
-  };
-
-  // Handle manual form submission without react-hook-form
-  const handleManualSubmit = (e: React.FormEvent) => {
+  function handleManualSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setShowAlert(true);
 
-    if (!longUrlInput) {
-      setError("Please enter a URL");
-      return;
-    }
-
-    try {
-      new URL(longUrlInput);
-    } catch {
-      setError("Please enter a valid URL (e.g., https://example.com)");
-      return;
-    }
-
-    if (containsAdultContent(longUrlInput)) {
-      setError("This type of content is not allowed");
+    const urlValidation = validateUrl(longUrlInput);
+    if (!urlValidation.isValid) {
+      setError(urlValidation.error ?? "Invalid URL");
       return;
     }
 
     if (customSlugInput && !/^[a-zA-Z0-9-_]*$/.test(customSlugInput)) {
-      setError("Custom slug can only contain letters, numbers, hyphens, and underscores");
+      setError(
+        "Custom slug can only contain letters, numbers, hyphens, and underscores"
+      );
       return;
     }
 
@@ -239,21 +203,30 @@ export function UrlShortenerForm() {
     setShortUrl(null);
     setError(null);
 
+    const normalizedUrl = normalizeUrl(longUrlInput);
+
     if (session) {
       createUrl.mutate({
-        url: longUrlInput,
+        url: normalizedUrl,
         customSlug: customSlugInput || undefined,
       });
     } else {
       createAnonUrl.mutate({
-        url: longUrlInput,
+        url: normalizedUrl,
       });
     }
-  };
+  }
+
+  function copyToClipboard() {
+    if (!shortUrl) return;
+    navigator.clipboard.writeText(shortUrl).then(() => {
+      toast.success("Copied to clipboard!");
+    });
+  }
 
   return (
     <div className="mx-auto w-full max-w-md space-y-6">
-      {error && (
+      {error && showAlert && (
         <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
@@ -265,33 +238,57 @@ export function UrlShortenerForm() {
           <label className="text-sm font-medium">URL to shorten</label>
           <div className="relative">
             <Input
-              placeholder="https://example.com/very/long/url"
+              placeholder="www.example.com or https://example.com"
               autoComplete="off"
               className={`border-primary/20 focus-visible:ring-primary/20 w-full pr-10 ${
-                isValidUrl === false ? "border-red-500" : 
-                isValidUrl === true ? "border-green-500" : ""
+                isValidUrl === false && !isTyping
+                  ? "border-red-500"
+                  : isValidUrl === true && !isTyping
+                    ? "border-green-500"
+                    : ""
               }`}
               value={longUrlInput}
               onChange={(e) => {
                 setLongUrlInput(e.target.value);
-                validateUrl(e.target.value);
+                validateUrlInput(e.target.value);
+                setShowAlert(false);
               }}
             />
-            {isValidUrl !== null && (
+            {isValidUrl !== null && !isTyping && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
                 {isValidUrl ? (
-                  <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  <svg
+                    className="h-5 w-5 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 ) : (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <svg className="h-5 w-5 text-red-500 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      <svg
+                        className="h-5 w-5 text-red-500 cursor-help"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
                       </svg>
                     </TooltipTrigger>
                     <TooltipContent>
-                      Please enter a valid URL (e.g., https://example.com)
+                      {tooltipError || "Please enter a valid URL"}
                     </TooltipContent>
                   </Tooltip>
                 )}
