@@ -443,7 +443,7 @@ export const urlRouter = createTRPCRouter({
         // Check if the URL belongs to the current user
         if (url.userId !== ctx.session.user.id) {
           throw new TRPCError({
-            code: "FORBIDDEN", 
+            code: "FORBIDDEN",
             message: "You don't have permission to delete this URL",
           });
         }

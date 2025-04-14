@@ -1,1 +1,1 @@
-export * from './analytics-dialog'; 
+export * from "./analytics-dialog";

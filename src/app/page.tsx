@@ -38,9 +38,17 @@ export default async function Home() {
                 <FaGithub className="h-5 w-5" />
               </Button>
             </Link>
+            {session ? (
+              <UrlManager />
+            ) : (
+              <Link
+                href="/api/auth/signin"
+                className="text-primary hover:text-primary/90 bg-primary/10 hover:bg-primary/20 rounded-md px-3 py-1.5 text-sm transition-colors"
+              >
+                Sign in to save URLs
+              </Link>
+            )}
 
-            <UrlManager />
-            
             {session?.user?.image && (
               <ProfileDropdown
                 imageUrl={session.user.image}
