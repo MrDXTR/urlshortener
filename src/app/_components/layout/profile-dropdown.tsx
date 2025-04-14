@@ -13,7 +13,7 @@ import {
 import { UserIcon, LogOutIcon, Link2Icon, BarChart3Icon } from "lucide-react";
 import { api } from "~/trpc/react";
 import { useState } from "react";
-import { AnalyticsDialog } from "./analytics-dialog";
+import { AnalyticsDialog } from "../analytics";
 
 interface ProfileDropdownProps {
   imageUrl: string;

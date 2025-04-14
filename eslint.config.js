@@ -38,6 +38,7 @@ export default tseslint.config(
       "react-hooks/exhaustive-deps": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
       "@typescript-eslint/no-unsafe-argument": "off",
+      "@typescript-eslint/no-unsafe-return": "off",
     },
   },
   {

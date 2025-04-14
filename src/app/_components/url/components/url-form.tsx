@@ -96,16 +96,16 @@ export function UrlShortenerForm() {
       setTooltipError(validation.error ?? null);
       setIsTyping(false);
     }, 500),
-    []
+    [],
   );
 
   // Debounce function
   function debounce<T extends (...args: any[]) => any>(
     func: T,
-    wait: number
-  ) {
+    wait: number,
+  ): (...args: Parameters<T>) => void {
     let timeout: NodeJS.Timeout | null = null;
-    return function (...args: Parameters<T>) {
+    return function (...args: Parameters<T>): void {
       if (timeout) clearTimeout(timeout);
       timeout = setTimeout(() => func(...args), wait);
     };
@@ -189,7 +189,7 @@ export function UrlShortenerForm() {
 
     if (customSlugInput && !/^[a-zA-Z0-9-_]*$/.test(customSlugInput)) {
       setError(
-        "Custom slug can only contain letters, numbers, hyphens, and underscores"
+        "Custom slug can only contain letters, numbers, hyphens, and underscores",
       );
       return;
     }
@@ -255,7 +255,7 @@ export function UrlShortenerForm() {
               }}
             />
             {isValidUrl !== null && !isTyping && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <div className="absolute top-1/2 right-3 -translate-y-1/2">
                 {isValidUrl ? (
                   <svg
                     className="h-5 w-5 text-green-500"
@@ -274,7 +274,7 @@ export function UrlShortenerForm() {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <svg
-                        className="h-5 w-5 text-red-500 cursor-help"
+                        className="h-5 w-5 cursor-help text-red-500"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"

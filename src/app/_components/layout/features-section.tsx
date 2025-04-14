@@ -62,7 +62,6 @@ export function FeaturesSection() {
                 {feature.description}
               </p>
             </CardContent>
-
           </Card>
         ))}
       </div>
