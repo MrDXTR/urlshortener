@@ -423,4 +423,51 @@ export const urlRouter = createTRPCRouter({
     // For now, just return the total click count
     return [{ name: "All Devices", value: totalClicks }];
   }),
+
+  deleteUrl: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        // First check if the URL exists and belongs to the user
+        const url = await ctx.db.shortenedURL.findUnique({
+          where: { id: input.id },
+        });
+
+        if (!url) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "URL not found",
+          });
+        }
+
+        // Check if the URL belongs to the current user
+        if (url.userId !== ctx.session.user.id) {
+          throw new TRPCError({
+            code: "FORBIDDEN", 
+            message: "You don't have permission to delete this URL",
+          });
+        }
+
+        // Delete the URL
+        await ctx.db.shortenedURL.delete({
+          where: { id: input.id },
+        });
+
+        return { success: true };
+      } catch (error) {
+        console.error("Error deleting URL:", error);
+
+        // Re-throw TRPCError instances
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
+        // Convert other errors to TRPCError
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to delete URL",
+          cause: error,
+        });
+      }
+    }),
 });

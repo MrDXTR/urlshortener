@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { auth } from "~/server/auth";
-import { ThemeToggle } from "./_components/theme-toggle";
+import { ThemeToggle } from "./_components";
 import { BorderBeam } from "~/components/magicui/border-beam";
 import {
   Card,
@@ -9,10 +9,10 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { UrlShortener } from "./_components/url-shortener";
-import { FeaturesSection } from "./_components/features-section";
-import { UrlListSheet } from "./_components/url-list-sheet";
-import { ProfileDropdown } from "./_components/profileinfo";
+import { UrlShortener } from "./_components";
+import { FeaturesSection } from "./_components";
+import { UrlManager } from "./_components";
+import { ProfileDropdown } from "./_components";
 import { FaGithub } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
 
@@ -39,24 +39,14 @@ export default async function Home() {
               </Button>
             </Link>
 
-            {session ? (
-              <>
-                <UrlListSheet />
-                {session.user?.image && (
-                  <ProfileDropdown
-                    imageUrl={session.user.image}
-                    name={session.user.name || "User"}
-                    email={session.user.email || ""}
-                  />
-                )}
-              </>
-            ) : (
-              <Link
-                href="/api/auth/signin"
-                className="text-primary hover:text-primary/90 bg-primary/10 hover:bg-primary/20 rounded-md px-3 py-1.5 text-sm transition-colors"
-              >
-                Sign in to save URLs
-              </Link>
+            <UrlManager />
+            
+            {session?.user?.image && (
+              <ProfileDropdown
+                imageUrl={session.user.image}
+                name={session.user.name || "User"}
+                email={session.user.email || ""}
+              />
             )}
 
             <ThemeToggle />

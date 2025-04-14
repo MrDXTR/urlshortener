@@ -1,7 +1,7 @@
 "use client";
 
 import { Toaster } from "sonner";
-import { UrlShortenerForm } from "./url-form";
+import { UrlShortenerForm } from "./components/url-form";
 
 export function UrlShortener() {
   return (
