@@ -20,6 +20,7 @@ import { api } from "~/trpc/react";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "~/components/ui/alert";
+import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
 
 // List of adult content patterns to block
 const adultContentPatterns = [
@@ -40,20 +41,28 @@ const containsAdultContent = (url: string) => {
 const AuthFormSchema = z.object({
   longUrl: z
     .string()
-    .min(1, { message: "URL is required" })
+    .min(1, { message: "Please enter a URL" })
+    .url({ message: "Please enter a valid URL (e.g., https://example.com)" })
     .refine((url) => !containsAdultContent(url), {
-      message: "URLs containing adult content are not allowed",
+      message: "This type of content is not allowed",
     }),
-  customSlug: z.string().optional(),
+  customSlug: z
+    .string()
+    .regex(/^[a-zA-Z0-9-_]*$/, {
+      message: "Custom slug can only contain letters, numbers, hyphens, and underscores",
+    })
+    .max(50, { message: "Custom slug must be 50 characters or less" })
+    .optional(),
 });
 
 // Form schema for anonymous users
 const GuestFormSchema = z.object({
   longUrl: z
     .string()
-    .min(1, { message: "URL is required" })
+    .min(1, { message: "Please enter a URL" })
+    .url({ message: "Please enter a valid URL (e.g., https://example.com)" })
     .refine((url) => !containsAdultContent(url), {
-      message: "URLs containing adult content are not allowed",
+      message: "This type of content is not allowed",
     }),
 });
 
@@ -179,18 +188,50 @@ export function UrlShortenerForm() {
   // Try uncontrolled inputs as a backup solution
   const [longUrlInput, setLongUrlInput] = useState("");
   const [customSlugInput, setCustomSlugInput] = useState("");
+  const [isValidUrl, setIsValidUrl] = useState<boolean | null>(null);
+
+  // Validate URL as user types
+  const validateUrl = (url: string) => {
+    if (!url) {
+      setIsValidUrl(null);
+      return;
+    }
+    try {
+      new URL(url);
+      setIsValidUrl(true);
+    } catch {
+      setIsValidUrl(false);
+    }
+  };
 
   // Handle manual form submission without react-hook-form
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!longUrlInput) {
-      setError("URL is required");
+      setError("Please enter a URL");
+      return;
+    }
+
+    try {
+      new URL(longUrlInput);
+    } catch {
+      setError("Please enter a valid URL (e.g., https://example.com)");
       return;
     }
 
     if (containsAdultContent(longUrlInput)) {
-      setError("URLs containing adult content are not allowed");
+      setError("This type of content is not allowed");
+      return;
+    }
+
+    if (customSlugInput && !/^[a-zA-Z0-9-_]*$/.test(customSlugInput)) {
+      setError("Custom slug can only contain letters, numbers, hyphens, and underscores");
+      return;
+    }
+
+    if (customSlugInput && customSlugInput.length > 50) {
+      setError("Custom slug must be 50 characters or less");
       return;
     }
 
@@ -219,17 +260,44 @@ export function UrlShortenerForm() {
         </Alert>
       )}
 
-      {/* Using simple form controls instead of react-hook-form to avoid validation issues */}
       <form onSubmit={handleManualSubmit} className="space-y-5">
         <div className="space-y-2">
           <label className="text-sm font-medium">URL to shorten</label>
-          <Input
-            placeholder="https://example.com/very/long/url"
-            autoComplete="off"
-            className="border-primary/20 focus-visible:ring-primary/20 w-full"
-            value={longUrlInput}
-            onChange={(e) => setLongUrlInput(e.target.value)}
-          />
+          <div className="relative">
+            <Input
+              placeholder="https://example.com/very/long/url"
+              autoComplete="off"
+              className={`border-primary/20 focus-visible:ring-primary/20 w-full pr-10 ${
+                isValidUrl === false ? "border-red-500" : 
+                isValidUrl === true ? "border-green-500" : ""
+              }`}
+              value={longUrlInput}
+              onChange={(e) => {
+                setLongUrlInput(e.target.value);
+                validateUrl(e.target.value);
+              }}
+            />
+            {isValidUrl !== null && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                {isValidUrl ? (
+                  <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <svg className="h-5 w-5 text-red-500 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Please enter a valid URL (e.g., https://example.com)
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {session && (
@@ -242,18 +310,13 @@ export function UrlShortenerForm() {
                 {origin}/
               </div>
               <Input
-                placeholder="my-custom-url"
+                placeholder="my-custom-url (letters, numbers, hyphens, underscores)"
                 autoComplete="off"
                 className="border-primary/20 focus-visible:ring-primary/20 w-full rounded-l-none"
                 value={customSlugInput}
                 onChange={(e) => setCustomSlugInput(e.target.value)}
               />
             </div>
-            {customSlugInput && (
-              <p className="text-muted-foreground mt-1 text-xs">
-                Preview: {origin}/{customSlugInput}
-              </p>
-            )}
           </div>
         )}
 
