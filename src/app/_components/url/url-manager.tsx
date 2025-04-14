@@ -56,6 +56,15 @@ export function UrlManager({ open, onOpenChange }: UrlManagerProps = {}) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [urlToDelete, setUrlToDelete] = useState<string | null>(null);
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      document.body.style.pointerEvents = '';
+    }
+    if (onOpenChange) {
+      onOpenChange(newOpen);
+    }
+  };
+
   const deleteUrlMutation = api.url.deleteUrl.useMutation({
     onSuccess: () => {
       toast.success("URL deleted successfully");
@@ -99,7 +108,7 @@ export function UrlManager({ open, onOpenChange }: UrlManagerProps = {}) {
 
   return (
     <>
-      <Sheet open={open} onOpenChange={onOpenChange}>
+      <Sheet open={open} onOpenChange={handleOpenChange}>
         <SheetTrigger asChild>
           <Button
             variant="outline"
@@ -289,7 +298,13 @@ export function UrlManager({ open, onOpenChange }: UrlManagerProps = {}) {
 
       <AlertDialog
         open={!!urlToDelete}
-        onOpenChange={(open) => !open && setUrlToDelete(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setUrlToDelete(null);
+            // Ensure pointer events are restored
+            document.body.style.pointerEvents = '';
+          }
+        }}
       >
         <AlertDialogContent className="animate-in fade-in-50 zoom-in-95 duration-200">
           <AlertDialogHeader>

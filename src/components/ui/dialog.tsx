@@ -9,7 +9,26 @@ import { cn } from "~/lib/utils";
 function Dialog({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
-  return <DialogPrimitive.Root data-slot="dialog" {...props} />;
+  const { onOpenChange: originalOnOpenChange, ...restProps } = props;
+  
+  // Wrap the onOpenChange handler to ensure pointer events are restored
+  const handleOpenChange = React.useCallback((open: boolean) => {
+    // When dialog closes, ensure pointer events are restored
+    if (!open) {
+      document.body.style.pointerEvents = '';
+    }
+    
+    // Call the original handler if provided
+    if (originalOnOpenChange) {
+      originalOnOpenChange(open);
+    }
+  }, [originalOnOpenChange]);
+
+  return <DialogPrimitive.Root 
+    data-slot="dialog" 
+    {...restProps} 
+    onOpenChange={handleOpenChange} 
+  />;
 }
 
 function DialogTrigger({

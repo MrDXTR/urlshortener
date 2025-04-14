@@ -6,6 +6,7 @@ import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 
 import { TRPCReactProvider } from "~/trpc/react";
+import { PointerEventsCleanup } from "./_components/pointer-events-cleanup";
 
 export const metadata: Metadata = {
   title: "URL Shortener",
@@ -31,6 +32,7 @@ export default function RootLayout({
             </ThemeProvider>
           </SessionProvider>
         </TRPCReactProvider>
+        <PointerEventsCleanup />
       </body>
     </html>
   );

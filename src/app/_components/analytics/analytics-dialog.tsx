@@ -49,6 +49,13 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
   const { data: userUrls, isLoading } = api.url.getUserUrls.useQuery();
   const { data: userStats } = api.url.getUserStats.useQuery();
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      document.body.style.pointerEvents = '';
+    }
+    onOpenChange(newOpen);
+  };
+
   // Process chart data when URLs are loaded
   const chartData =
     userUrls
@@ -70,7 +77,7 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-auto p-0 md:max-h-[90vh]">
         {/* Header Section with Stats */}
         <div className="bg-muted/40 border-b p-6">

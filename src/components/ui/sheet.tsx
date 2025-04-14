@@ -7,7 +7,26 @@ import { XIcon } from "lucide-react";
 import { cn } from "~/lib/utils";
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
-  return <SheetPrimitive.Root data-slot="sheet" {...props} />;
+  const { onOpenChange: originalOnOpenChange, ...restProps } = props;
+  
+  // Wrap the onOpenChange handler to ensure pointer events are restored
+  const handleOpenChange = React.useCallback((open: boolean) => {
+    // When sheet closes, ensure pointer events are restored
+    if (!open) {
+      document.body.style.pointerEvents = '';
+    }
+    
+    // Call the original handler if provided
+    if (originalOnOpenChange) {
+      originalOnOpenChange(open);
+    }
+  }, [originalOnOpenChange]);
+
+  return <SheetPrimitive.Root 
+    data-slot="sheet" 
+    {...restProps} 
+    onOpenChange={handleOpenChange} 
+  />;
 }
 
 function SheetTrigger({
