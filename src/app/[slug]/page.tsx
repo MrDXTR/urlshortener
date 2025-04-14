@@ -13,7 +13,8 @@ export default async function SlugPage({ params }: PageProps) {
 
   if (typeof slug !== "string") {
     console.log(`Invalid slug parameter: ${slug}`);
-    return notFound();
+    // Redirect to home with error message
+    redirect(`/?error=invalid-slug&slug=${encodeURIComponent(String(slug))}`);
   }
 
   try {
@@ -36,6 +37,7 @@ export default async function SlugPage({ params }: PageProps) {
     }
 
     console.error(`Error processing slug ${slug}:`, error);
-    return notFound();
+    // Redirect to home with error message that the slug wasn't found
+    redirect(`/?error=not-found&slug=${encodeURIComponent(slug)}`);
   }
 }

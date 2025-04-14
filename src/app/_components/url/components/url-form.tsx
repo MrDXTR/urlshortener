@@ -238,6 +238,7 @@ export function UrlShortenerForm() {
           <label className="text-sm font-medium">URL to shorten</label>
           <div className="relative">
             <Input
+              id="url-input"
               placeholder="www.example.com or https://example.com"
               autoComplete="off"
               className={`border-primary/20 focus-visible:ring-primary/20 w-full pr-10 ${

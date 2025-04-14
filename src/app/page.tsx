@@ -15,6 +15,7 @@ import { UrlManager } from "./_components";
 import { ProfileDropdown } from "./_components";
 import { FaGithub } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
+import { SlugErrorHandler } from "./_components/url/slug-error-handler";
 
 export default async function Home() {
   const session = await auth();
@@ -23,6 +24,11 @@ export default async function Home() {
     <div className="flex min-h-screen flex-col">
       {/* Background Effects */}
       <div className="from-background via-background/90 to-background/80 fixed inset-0 -z-10 bg-gradient-to-b"></div>
+
+    
+
+      {/* Slug Error Handler - shows toast notifications for invalid slugs */}
+      <SlugErrorHandler />
 
       {/* Header */}
       <header className="bg-background/80 border-border fixed top-0 z-50 w-full border-b backdrop-blur">

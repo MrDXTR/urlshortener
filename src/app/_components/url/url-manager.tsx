@@ -63,7 +63,9 @@ export function UrlManager({ open, onOpenChange }: UrlManagerProps = {}) {
       void utils.url.getUserStats.invalidate();
     },
     onError: (error) => {
-      toast.error(`Error: ${error.message}`);
+      toast.error("Error", {
+        description: error.message,
+      });
     },
   });
 
