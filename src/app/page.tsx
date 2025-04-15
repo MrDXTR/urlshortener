@@ -16,24 +16,23 @@ import { ProfileDropdown } from "./_components";
 import { FaGithub } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
 import { SlugErrorHandler } from "./_components/url/slug-error-handler";
+import { LinkIcon } from "lucide-react";
 
 export default async function Home() {
   const session = await auth();
 
   return (
     <div className="flex min-h-screen flex-col">
-      {/* Background Effects */}
-      <div className="from-background via-background/90 to-background/80 fixed inset-0 -z-10 bg-gradient-to-b"></div>
 
-    
-
-      {/* Slug Error Handler - shows toast notifications for invalid slugs */}
       <SlugErrorHandler />
 
       {/* Header */}
       <header className="bg-background/80 border-border fixed top-0 z-50 w-full border-b backdrop-blur">
         <div className="flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+          <LinkIcon className="h-5 w-5" />
           <h1 className="text-2xl font-bold">URL Shortener</h1>
+          </div>
           <div className="flex items-center gap-4">
             <Link
               href="https://github.com/MrDXTR/urlshortener"

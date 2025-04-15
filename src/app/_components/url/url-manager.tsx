@@ -89,7 +89,6 @@ export function UrlManager({ open, onOpenChange }: UrlManagerProps = {}) {
       description: shortUrl,
     });
 
-    // Reset copied state after 2 seconds
     setTimeout(() => setCopiedId(null), 2000);
   };
 
