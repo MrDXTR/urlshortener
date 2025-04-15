@@ -296,6 +296,10 @@ export function UrlShortenerForm() {
               </div>
             )}
           </div>
+    
+          {isValidUrl === false && !isTyping && tooltipError && (
+            <p className="text-red-500 text-xs mt-1 px-1 block sm:hidden">{tooltipError}</p>
+          )}
         </div>
 
         {session && (
