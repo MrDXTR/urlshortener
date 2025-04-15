@@ -11,25 +11,27 @@ function Dialog({
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
   // Don't destructure onOpenChange to avoid unbound method error
   const { ...restProps } = props;
-  
+
   // Wrap the onOpenChange handler to ensure pointer events are restored
   const handleOpenChange = (open: boolean): void => {
     // When dialog closes, ensure pointer events are restored
     if (!open) {
-      document.body.style.pointerEvents = '';
+      document.body.style.pointerEvents = "";
     }
-    
+
     // Call the original handler if provided, preserving its context
     if (props.onOpenChange) {
       props.onOpenChange(open);
     }
   };
 
-  return <DialogPrimitive.Root 
-    data-slot="dialog" 
-    {...restProps} 
-    onOpenChange={handleOpenChange} 
-  />;
+  return (
+    <DialogPrimitive.Root
+      data-slot="dialog"
+      {...restProps}
+      onOpenChange={handleOpenChange}
+    />
+  );
 }
 
 function DialogTrigger({

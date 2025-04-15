@@ -17,34 +17,36 @@ import { FaGithub } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
 import { SlugErrorHandler } from "./_components/url/slug-error-handler";
 import { LinkIcon } from "lucide-react";
+import { UrlButton } from "./_components/url/url-button";
+import { ShineBorder } from "~/components/magicui/shine-border";
 
 export default async function Home() {
   const session = await auth();
 
   return (
     <div className="flex min-h-screen flex-col">
-
       <SlugErrorHandler />
 
       {/* Header */}
       <header className="bg-background/80 border-border fixed top-0 z-50 w-full border-b backdrop-blur">
         <div className="flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
-          <LinkIcon className="h-5 w-5" />
-          <h1 className="text-2xl font-bold">URL Shortener</h1>
+            <LinkIcon className="h-5 w-5" />
+            <h1 className="text-2xl font-bold">URL Shortener</h1>
           </div>
           <div className="flex items-center gap-4">
             <Link
               href="https://github.com/MrDXTR/urlshortener"
               target="_blank"
               rel="noopener noreferrer"
+              className="hidden sm:block"
             >
               <Button variant="outline" size="icon">
                 <FaGithub className="h-5 w-5" />
               </Button>
             </Link>
             {session ? (
-              <UrlManager />
+              <UrlButton />
             ) : (
               <Link
                 href="/api/auth/signin"
@@ -83,11 +85,17 @@ export default async function Home() {
 
         <div className="relative mx-auto w-full max-w-md">
           <Card className="bg-card/80 border-primary/20 relative overflow-hidden shadow-md backdrop-blur">
-            <BorderBeam
-              size={40}
-              colorFrom="hsl(var(--primary))"
-              colorTo="hsl(var(--secondary))"
+            <ShineBorder
+              borderWidth={2}
               duration={8}
+              shineColor={[
+                "#FF0080",
+                "#7928CA",
+                "#0070F3",
+                "#00CFFD",
+                "#00CC88",
+              ]}
+              className="opacity-30 transition-opacity duration-300 hover:opacity-70"
             />
             <CardHeader className="pb-2">
               <CardTitle className="text-xl">Create Short URL</CardTitle>

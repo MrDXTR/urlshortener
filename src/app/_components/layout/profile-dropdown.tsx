@@ -10,10 +10,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { UserIcon, LogOutIcon, Link2Icon, BarChart3Icon } from "lucide-react";
+import {
+  UserIcon,
+  LogOutIcon,
+  Link2Icon,
+  BarChart3Icon,
+  ExternalLinkIcon,
+} from "lucide-react";
 import { api } from "~/trpc/react";
 import { useState } from "react";
 import { AnalyticsDialog } from "../analytics";
+import { UrlManager } from "../url";
+import { FaGithub } from "react-icons/fa";
 
 interface ProfileDropdownProps {
   imageUrl: string;
@@ -29,6 +37,7 @@ export function ProfileDropdown({
   // Get user's URL stats
   const { data: urlStats } = api.url.getUserStats.useQuery();
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showUrlManager, setShowUrlManager] = useState(false);
 
   return (
     <>
@@ -43,7 +52,7 @@ export function ProfileDropdown({
             priority
           />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-64 mt-1">
+        <DropdownMenuContent align="end" className="mt-1 w-64">
           <DropdownMenuLabel className="flex flex-col gap-1">
             <span className="font-medium">{name}</span>
             <span className="text-muted-foreground text-xs font-normal">
@@ -87,6 +96,28 @@ export function ProfileDropdown({
             <BarChart3Icon className="mr-2 h-4 w-4" />
             <span>Analytics</span>
           </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setShowUrlManager(true)}
+            className="flex sm:hidden"
+          >
+            <Link2Icon className="mr-2 h-4 w-4" />
+            <span>My URLs</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator className="sm:hidden" />
+          <Link
+            href="https://github.com/MrDXTR/urlshortener"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <DropdownMenuItem className="flex items-center justify-between sm:hidden">
+              <div className="flex items-center gap-2">
+                <FaGithub className="mr-2 h-4 w-4" />
+                <span>GitHub</span>
+              </div>
+              <ExternalLinkIcon className="mr-2 h-4 w-4" />
+            </DropdownMenuItem>
+          </Link>
 
           <DropdownMenuSeparator />
 
@@ -101,6 +132,7 @@ export function ProfileDropdown({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      <UrlManager open={showUrlManager} onOpenChange={setShowUrlManager} />
 
       <AnalyticsDialog open={showAnalytics} onOpenChange={setShowAnalytics} />
     </>

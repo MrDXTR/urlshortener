@@ -58,7 +58,7 @@ export function UrlManager({ open, onOpenChange }: UrlManagerProps = {}) {
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
-      document.body.style.pointerEvents = '';
+      document.body.style.pointerEvents = "";
     }
     if (onOpenChange) {
       onOpenChange(newOpen);
@@ -107,17 +107,7 @@ export function UrlManager({ open, onOpenChange }: UrlManagerProps = {}) {
 
   return (
     <>
-      <Sheet open={open} onOpenChange={handleOpenChange}>
-        <SheetTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-primary/30 bg-primary/5 hover:bg-primary/10 relative gap-2 transition-colors"
-          >
-            <LinkIcon className="text-primary h-4 w-4" />
-            <span>My URLs</span>
-          </Button>
-        </SheetTrigger>
+      <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent
           side="right"
           className="border-primary/30 bg-background/95 overflow-y-auto p-4 backdrop-blur-lg sm:max-w-md"
@@ -301,7 +291,7 @@ export function UrlManager({ open, onOpenChange }: UrlManagerProps = {}) {
           if (!open) {
             setUrlToDelete(null);
             // Ensure pointer events are restored
-            document.body.style.pointerEvents = '';
+            document.body.style.pointerEvents = "";
           }
         }}
       >

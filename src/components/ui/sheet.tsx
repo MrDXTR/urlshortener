@@ -9,25 +9,27 @@ import { cn } from "~/lib/utils";
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   // Don't destructure onOpenChange to avoid unbound method error
   const { ...restProps } = props;
-  
+
   // Wrap the onOpenChange handler to ensure pointer events are restored
   const handleOpenChange = (open: boolean): void => {
     // When sheet closes, ensure pointer events are restored
     if (!open) {
-      document.body.style.pointerEvents = '';
+      document.body.style.pointerEvents = "";
     }
-    
+
     // Call the original handler if provided, preserving its context
     if (props.onOpenChange) {
       props.onOpenChange(open);
     }
   };
 
-  return <SheetPrimitive.Root 
-    data-slot="sheet" 
-    {...restProps} 
-    onOpenChange={handleOpenChange} 
-  />;
+  return (
+    <SheetPrimitive.Root
+      data-slot="sheet"
+      {...restProps}
+      onOpenChange={handleOpenChange}
+    />
+  );
 }
 
 function SheetTrigger({

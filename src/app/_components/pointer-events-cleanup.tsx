@@ -2,14 +2,13 @@
 
 import { useEffect } from "react";
 
-
 export function PointerEventsCleanup() {
   useEffect(() => {
     const resetPointerEvents = () => {
       const bodyStyle = window.getComputedStyle(document.body);
-      if (bodyStyle.pointerEvents === 'none') {
-        console.log('Detected pointer-events: none on body, resetting...');
-        document.body.style.pointerEvents = '';
+      if (bodyStyle.pointerEvents === "none") {
+        console.log("Detected pointer-events: none on body, resetting...");
+        document.body.style.pointerEvents = "";
       }
     };
 
@@ -25,15 +24,15 @@ export function PointerEventsCleanup() {
       setTimeout(resetPointerEvents, 100);
     };
 
-    document.addEventListener('click', handleClick);
+    document.addEventListener("click", handleClick);
 
     return () => {
       clearInterval(interval);
-      document.removeEventListener('click', handleClick);
+      document.removeEventListener("click", handleClick);
       // Reset on unmount as well
-      document.body.style.pointerEvents = '';
+      document.body.style.pointerEvents = "";
     };
   }, []);
 
   return null;
-} 
+}

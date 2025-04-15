@@ -17,7 +17,7 @@ export function SlugErrorHandler() {
           toast.error("Link not found", {
             description: `The shortened URL "${slug}" doesn't exist or has been removed.`,
           });
-          
+
           // Clear the URL parameters after showing the toast
           const newUrl = window.location.pathname;
           window.history.replaceState({}, "", newUrl);
@@ -25,7 +25,7 @@ export function SlugErrorHandler() {
           toast.error("Invalid link format", {
             description: `The URL format "${slug}" is not valid.`,
           });
-          
+
           // Clear the URL parameters after showing the toast
           const newUrl = window.location.pathname;
           window.history.replaceState({}, "", newUrl);
@@ -35,4 +35,4 @@ export function SlugErrorHandler() {
   }, [error, slug]);
 
   return null;
-} 
+}

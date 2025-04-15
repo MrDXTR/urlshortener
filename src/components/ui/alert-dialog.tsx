@@ -12,19 +12,22 @@ const AlertDialogRoot = AlertDialogPrimitive.Root;
 // Create a wrapper component that handles pointer-events cleanup
 function AlertDialog(props: React.ComponentProps<typeof AlertDialogRoot>) {
   const { onOpenChange, ...restProps } = props;
-  
+
   // Handle pointer-events cleanup when dialog closes
-  const handleOpenChange = React.useCallback((open: boolean) => {
-    if (!open) {
-      // Reset pointer-events on body when dialog closes
-      document.body.style.pointerEvents = '';
-    }
-    
-    // Call the original handler if provided
-    if (onOpenChange) {
-      onOpenChange(open);
-    }
-  }, [onOpenChange]);
+  const handleOpenChange = React.useCallback(
+    (open: boolean) => {
+      if (!open) {
+        // Reset pointer-events on body when dialog closes
+        document.body.style.pointerEvents = "";
+      }
+
+      // Call the original handler if provided
+      if (onOpenChange) {
+        onOpenChange(open);
+      }
+    },
+    [onOpenChange],
+  );
 
   return <AlertDialogRoot {...restProps} onOpenChange={handleOpenChange} />;
 }

@@ -4,7 +4,14 @@ import { useState } from "react";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from "~/components/ui/card";
 import { ShineBorder } from "~/components/magicui/shine-border";
 import { AuroraText } from "~/components/magicui/aurora-text";
 import { LogOut, ArrowLeft } from "lucide-react";
@@ -29,14 +36,14 @@ export default function LogoutPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4">
-      <Card className="border-primary/20 w-full max-w-md relative overflow-hidden">
+      <Card className="border-primary/20 relative w-full max-w-md overflow-hidden">
         <ShineBorder
           borderWidth={2}
           duration={8}
           shineColor={["#FF0080", "#7928CA"]}
           className="opacity-30 transition-opacity duration-300 hover:opacity-70"
         />
-        
+
         <CardHeader className="space-y-2 text-center">
           <CardTitle>
             <AuroraText
@@ -47,31 +54,29 @@ export default function LogoutPage() {
               Sign Out
             </AuroraText>
           </CardTitle>
-          <CardDescription>
-            Are you sure you want to sign out?
-          </CardDescription>
+          <CardDescription>Are you sure you want to sign out?</CardDescription>
         </CardHeader>
-        
+
         <CardContent className="flex justify-center">
-          <LogOut className="h-16 w-16 text-muted-foreground opacity-80" />
+          <LogOut className="text-muted-foreground h-16 w-16 opacity-80" />
         </CardContent>
-        
-        <CardFooter className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+
+        <CardFooter className="flex flex-col justify-center gap-3 pt-2 sm:flex-row">
           <Button
             onClick={handleCancel}
             variant="outline"
-            className="w-full sm:w-auto transition-all duration-300 cursor-pointer hover:opacity-80 hover:translate-y-[-1px]"
+            className="w-full cursor-pointer transition-all duration-300 hover:translate-y-[-1px] hover:opacity-80 sm:w-auto"
             size="lg"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Return to App
           </Button>
-          
+
           <Button
             onClick={handleLogout}
             variant="destructive"
             disabled={isLoading}
-            className="w-full sm:w-auto transition-all duration-300 cursor-pointer hover:opacity-90 hover:translate-y-[-1px]"
+            className="w-full cursor-pointer transition-all duration-300 hover:translate-y-[-1px] hover:opacity-90 sm:w-auto"
             size="lg"
           >
             {isLoading ? (
@@ -85,4 +90,4 @@ export default function LogoutPage() {
       </Card>
     </div>
   );
-} 
+}

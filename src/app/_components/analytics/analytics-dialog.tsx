@@ -51,7 +51,7 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
-      document.body.style.pointerEvents = '';
+      document.body.style.pointerEvents = "";
     }
     onOpenChange(newOpen);
   };

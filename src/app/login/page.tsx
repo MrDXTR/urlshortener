@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "~/components/ui/card";
 import { ShineBorder } from "~/components/magicui/shine-border";
 import { AuroraText } from "~/components/magicui/aurora-text";
 import { LogIn } from "lucide-react";
@@ -25,14 +31,14 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4">
-      <Card className="border-primary/20 w-full max-w-md relative overflow-hidden">
+      <Card className="border-primary/20 relative w-full max-w-md overflow-hidden">
         <ShineBorder
           borderWidth={2}
           duration={8}
           shineColor={["#0070F3", "#00CFFD"]}
           className="opacity-30 transition-opacity duration-300 hover:opacity-70"
         />
-        
+
         <CardHeader className="space-y-2 text-center">
           <CardTitle>
             <AuroraText
@@ -47,12 +53,12 @@ export default function LoginPage() {
             Sign in to continue to URL Shortener
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="space-y-6">
           <Button
             onClick={handleGoogleSignIn}
             disabled={isLoading}
-            className="w-full transition-colors duration-300 cursor-pointer hover:opacity-90 hover:translate-y-[-1px]"
+            className="w-full cursor-pointer transition-colors duration-300 hover:translate-y-[-1px] hover:opacity-90"
             size="lg"
           >
             {isLoading ? (
@@ -68,14 +74,15 @@ export default function LoginPage() {
             )}
             Sign in with Google
           </Button>
-          
+
           <div className="text-center">
             <p className="text-muted-foreground text-xs">
-              By signing in, you agree to our Terms of Service and Privacy Policy
+              By signing in, you agree to our Terms of Service and Privacy
+              Policy
             </p>
           </div>
         </CardContent>
       </Card>
     </div>
   );
-} 
+}

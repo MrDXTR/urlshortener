@@ -57,8 +57,9 @@ function isValidHostname(hostname: string): boolean {
     return ipv6Regex.test(hostname);
   }
 
-  // Less restrictive domain validation that accepts development domains 
-  const domainRegex = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9-]{1,})+$/;
+  // Less restrictive domain validation that accepts development domains
+  const domainRegex =
+    /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9-]{1,})+$/;
   return domainRegex.test(hostname);
 }
 
