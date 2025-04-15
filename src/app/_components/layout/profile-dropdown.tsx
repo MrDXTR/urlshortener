@@ -33,16 +33,17 @@ export function ProfileDropdown({
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger className="focus:ring-primary/30 rounded-full outline-none focus:ring-2">
+        <DropdownMenuTrigger className="focus:ring-primary/30 relative flex h-8 w-8 items-center justify-center rounded-full outline-none focus:ring-2">
           <Image
             src={imageUrl}
             height={32}
             width={32}
             alt="Profile"
-            className="border-primary/20 hover:border-primary/40 h-8 w-8 rounded-full border transition-colors"
+            className="border-primary/20 hover:border-primary/40 min-h-8 min-w-8 rounded-full border transition-colors"
+            priority
           />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuContent align="end" className="w-64 mt-1">
           <DropdownMenuLabel className="flex flex-col gap-1">
             <span className="font-medium">{name}</span>
             <span className="text-muted-foreground text-xs font-normal">
