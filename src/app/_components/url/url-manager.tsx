@@ -225,11 +225,11 @@ export function UrlManager({ open, onOpenChange }: UrlManagerProps = {}) {
                             </div>
 
                             <div className="flex items-center justify-between">
-                              <div className="text-muted-foreground text-xs">
+                              <div className="text-muted-foreground text-xs truncate max-w-[60%]">
                                 {`${window.location.origin}/${url.slug}`}
                               </div>
 
-                              <div className="relative z-20 flex gap-1">
+                              <div className="relative z-20 flex gap-1 flex-shrink-0">
                                 <Button
                                   variant="ghost"
                                   size="icon"
