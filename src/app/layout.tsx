@@ -6,6 +6,7 @@ import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 
 import { TRPCReactProvider } from "~/trpc/react";
+import { Analytics } from "@vercel/analytics/react"
 import { PointerEventsCleanup } from "./_components/pointer-events-cleanup";
 
 export const metadata: Metadata = {
@@ -33,6 +34,7 @@ export default function RootLayout({
           </SessionProvider>
         </TRPCReactProvider>
         <PointerEventsCleanup />
+        <Analytics />
       </body>
     </html>
   );
