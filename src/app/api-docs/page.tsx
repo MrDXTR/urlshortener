@@ -458,7 +458,7 @@ Short URL copied to clipboard!`}
                         </tr>
                         <tr className="hover:bg-muted/50">
                           <td className="px-4 py-3 text-sm"><code>--api-key, -k</code></td>
-                          <td className="px-4 py-3 text-sm">Your API key (required for authenticated users)</td>
+                          <td className="px-4 py-3 text-sm">Your API key (can also be set via environment variable)</td>
                         </tr>
                         <tr className="hover:bg-muted/50">
                           <td className="px-4 py-3 text-sm"><code>--endpoint, -e</code></td>
@@ -474,6 +474,46 @@ Short URL copied to clipboard!`}
                         </tr>
                       </tbody>
                     </table>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-medium mb-3">API Key Configuration</h3>
+                  <p className="text-muted-foreground mb-4">
+                    You can provide your API key in two ways:
+                  </p>
+                  
+                  <ol className="text-muted-foreground list-decimal space-y-2 pl-6 mb-5">
+                    <li>Command line argument: <code>--api-key</code> or <code>-k</code></li>
+                    <li>Environment variable: <code>SHORTURL_API_KEY</code></li>
+                  </ol>
+                  
+                  <p className="text-muted-foreground mb-3">Setting up the environment variable:</p>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-medium mb-2">Windows:</h4>
+                      <CodeBlock
+                        code={'setx SHORTURL_API_KEY "YOUR_API_KEY"'}
+                        language="cmd"
+                        showLineNumbers={false}
+                      />
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium mb-2">macOS/Linux:</h4>
+                      <CodeBlock
+                        code={'echo \'export SHORTURL_API_KEY="YOUR_API_KEY"\' >> ~/.bash_profile\n# or for zsh users:\necho \'export SHORTURL_API_KEY="YOUR_API_KEY"\' >> ~/.zshrc'}
+                        language="bash"
+                        showLineNumbers={false}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 mt-4 text-blue-800 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300">
+                    <p className="text-sm">
+                      Using the environment variable allows you to avoid exposing your API key in command history or process listings.
+                    </p>
                   </div>
                 </div>
                 
