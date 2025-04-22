@@ -78,7 +78,7 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[90vh] p-0 md:max-h-[90vh]">
+      <DialogContent className="max-h-[90vh] overflow-hidden p-0 md:max-h-[90vh]">
         {/* Header Section with Stats */}
         <div className="bg-muted/40 border-b p-6">
           <DialogTitle className="mb-2 text-xl">URL Analytics</DialogTitle>

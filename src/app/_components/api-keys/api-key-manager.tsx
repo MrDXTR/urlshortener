@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { api } from "~/trpc/react";
 import {
   Dialog,
@@ -84,7 +84,6 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [copied, setCopied] = useState(false);
 
-
   const { data: apiKeys, refetch } = api.apiKey.getUserApiKeys.useQuery();
   const createKeyMutation = api.apiKey.createApiKey.useMutation({
     onSuccess: (data) => {
@@ -99,7 +98,7 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
     },
   });
 
-  const handleCreateKey = () => {
+  const handleCreateKey = useCallback(() => {
     if (newKeyName.trim() === "") return;
     createKeyMutation.mutate({ 
       name: newKeyName,
@@ -107,14 +106,14 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
     });
     setNewKeyName("");
     setExpiresInDays(undefined);
-  };
+  }, [createKeyMutation, newKeyName, expiresInDays]);
 
-  const handleRevokeKey = (id: string) => {
+  const handleRevokeKey = useCallback((id: string) => {
     revokeKeyMutation.mutate({ id });
     setKeyToRevoke(null);
-  };
+  }, [revokeKeyMutation]);
 
-  const handleCopyKey = (key: string) => {
+  const handleCopyKey = useCallback((key: string) => {
     navigator.clipboard.writeText(key);
     setCopied(true);
     toast("API key copied", {
@@ -125,12 +124,80 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
     setTimeout(() => {
       setCopied(false);
     }, 2000);
-  };
+  }, []);
 
-  const formatDate = (date: Date | null) => {
+  const handleSelectChange = useCallback((value: string) => {
+    setExpiresInDays(value === "never" ? undefined : Number(value));
+  }, []);
+
+  const formatDate = useCallback((date: Date | null) => {
     if (!date) return "N/A";
     return new Date(date).toLocaleDateString();
-  };
+  }, []);
+
+  const CreateKeyForm = useMemo(() => {
+    if (!isCreatingNew || newKeyValue) return null;
+    
+    return (
+      <Card>
+        <CardHeader className="px-4">
+          <CardTitle>Create API Key</CardTitle>
+          <CardDescription>
+            Name your API key and set an optional expiration.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4 px-4">
+          <div>
+            <Label htmlFor="name">API Key Name</Label>
+            <Input
+              id="name"
+              placeholder="e.g., iOS Shortcut Key"
+              value={newKeyName}
+              onChange={(e) => setNewKeyName(e.target.value)}
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="expires">Expiry Period</Label>
+            <Select 
+              onValueChange={handleSelectChange}
+              value={expiresInDays?.toString() || "never"}
+              defaultValue="never"
+            >
+              <SelectTrigger id="expires" className="w-full mt-1">
+                <SelectValue placeholder="Select expiry period" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="never">Never expires</SelectItem>
+                <SelectItem value="7">7 days</SelectItem>
+                <SelectItem value="30">30 days</SelectItem>
+                <SelectItem value="90">90 days</SelectItem>
+                <SelectItem value="365">1 year</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-between px-4">
+          <Button 
+            variant="outline" 
+            onClick={() => setIsCreatingNew(false)}
+            size="sm"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleCreateKey}
+            disabled={createKeyMutation.isPending || newKeyName.trim() === ""}
+            size="sm"
+          >
+            {createKeyMutation.isPending ? "Creating..." : "Create API Key"}
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  }, [isCreatingNew, newKeyValue, newKeyName, expiresInDays, createKeyMutation.isPending, handleCreateKey, handleSelectChange]);
+
+  if (!open) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -204,67 +271,8 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
           </Card>
         )}
 
-        {/* New key creation form */}
-        {isCreatingNew && !newKeyValue && (
-          <Card>
-            <CardHeader className="px-4">
-              <CardTitle>Create API Key</CardTitle>
-              <CardDescription>
-                Name your API key and set an optional expiration.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 px-4">
-              <div>
-                <Label htmlFor="name">API Key Name</Label>
-                <Input
-                  id="name"
-                  placeholder="e.g., iOS Shortcut Key"
-                  value={newKeyName}
-                  onChange={(e) => setNewKeyName(e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="expires">Expiry Period</Label>
-                <Select 
-                  onValueChange={(value) => {
-                    setExpiresInDays(value === "never" ? undefined : Number(value));
-                  }}
-                  value={expiresInDays?.toString() || "never"}
-                >
-                  <SelectTrigger id="expires" className="w-full mt-1">
-                    <SelectValue placeholder="Select expiry period" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="never">Never expires</SelectItem>
-                    <SelectItem value="7">7 days</SelectItem>
-                    <SelectItem value="30">30 days</SelectItem>
-                    <SelectItem value="90">90 days</SelectItem>
-                    <SelectItem value="365">1 year</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-between px-4">
-              <Button 
-                variant="outline" 
-                onClick={() => setIsCreatingNew(false)}
-                size="sm"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleCreateKey}
-                disabled={createKeyMutation.isPending || newKeyName.trim() === ""}
-                size="sm"
-              >
-                {createKeyMutation.isPending ? "Creating..." : "Create API Key"}
-              </Button>
-            </CardFooter>
-          </Card>
-        )}
+        {CreateKeyForm}
 
-        {/* List existing API keys */}
         <Card>
           <CardHeader className="pb-2 px-4">
             <CardTitle>Your API Keys</CardTitle>
@@ -275,7 +283,6 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
           <CardContent className="px-4">
             {apiKeys?.length ? (
               <div>
-                {/* Desktop view - traditional table */}
                 <div className="hidden md:block">
                   <Table>
                     <TableHeader>
@@ -330,7 +337,6 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
                   </Table>
                 </div>
 
-                {/* Mobile view - card-based layout */}
                 <div className="md:hidden space-y-4">
                   {apiKeys.map((apiKey) => (
                     <div 
@@ -419,7 +425,6 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
           </CardFooter>
         </Card>
 
-        {/* Revoke confirmation dialog */}
         <AlertDialog
           open={!!keyToRevoke}
           onOpenChange={(open) => !open && setKeyToRevoke(null)}
