@@ -41,6 +41,7 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Badge } from "~/components/ui/badge";
+import { toast } from "sonner";
 import {
   Tooltip,
   TooltipContent,
@@ -54,8 +55,20 @@ import {
   EyeOffIcon,
   ShieldCheck,
   AlertTriangle,
+  CheckIcon,
+  MoreVertical,
+  CalendarIcon,
+  ClockIcon,
+  CalendarDaysIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 
 interface ApiKeyManagerProps {
   open: boolean;
@@ -63,16 +76,20 @@ interface ApiKeyManagerProps {
 }
 
 export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
-  const [isCreating, setIsCreating] = useState(false);
   const [newKeyName, setNewKeyName] = useState("");
+  const [expiresInDays, setExpiresInDays] = useState<number | undefined>(undefined);
   const [newKeyValue, setNewKeyValue] = useState<string | null>(null);
   const [showNewKey, setShowNewKey] = useState(false);
   const [keyToRevoke, setKeyToRevoke] = useState<string | null>(null);
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [copied, setCopied] = useState(false);
+
 
   const { data: apiKeys, refetch } = api.apiKey.getUserApiKeys.useQuery();
   const createKeyMutation = api.apiKey.createApiKey.useMutation({
     onSuccess: (data) => {
       setNewKeyValue(data.key);
+      setIsCreatingNew(false);
       refetch();
     },
   });
@@ -84,8 +101,12 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
 
   const handleCreateKey = () => {
     if (newKeyName.trim() === "") return;
-    createKeyMutation.mutate({ name: newKeyName });
+    createKeyMutation.mutate({ 
+      name: newKeyName,
+      expiresInDays
+    });
     setNewKeyName("");
+    setExpiresInDays(undefined);
   };
 
   const handleRevokeKey = (id: string) => {
@@ -95,6 +116,15 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
 
   const handleCopyKey = (key: string) => {
     navigator.clipboard.writeText(key);
+    setCopied(true);
+    toast("API key copied", {
+      description: "The API key has been copied to your clipboard.",
+      duration: 3000,
+    });
+    // Reset copied state after a short delay
+    setTimeout(() => {
+      setCopied(false);
+    }, 2000);
   };
 
   const formatDate = (date: Date | null) => {
@@ -104,75 +134,41 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="max-h-[95vh] w-[95vw] max-w-full overflow-y-auto sm:max-w-2xl p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center">
             <KeyIcon className="mr-2 h-5 w-5" />
             API Key Management
           </DialogTitle>
           <DialogDescription>
-            Create and manage API keys for programmatic access to the URL
-            shortener.
+            Create and manage API keys for programmatic access.
           </DialogDescription>
         </DialogHeader>
-
-        {/* New Key Creation Dialog */}
-        <Dialog open={isCreating} onOpenChange={setIsCreating}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Create API Key</DialogTitle>
-              <DialogDescription>
-                Name your API key to help identify its usage.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div>
-                <Label htmlFor="name">API Key Name</Label>
-                <Input
-                  id="name"
-                  placeholder="e.g., iOS Shortcut Key"
-                  value={newKeyName}
-                  onChange={(e) => setNewKeyName(e.target.value)}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button
-                onClick={handleCreateKey}
-                disabled={
-                  createKeyMutation.isPending || newKeyName.trim() === ""
-                }
-              >
-                {createKeyMutation.isPending ? "Creating..." : "Create API Key"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
         {/* Display newly created key */}
         {newKeyValue && (
           <Card className="border-yellow-300 bg-yellow-50 dark:bg-yellow-950/30">
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2 px-4">
               <CardTitle className="text-sm font-medium">
                 New API Key Created
               </CardTitle>
               <CardDescription className="text-yellow-700 dark:text-yellow-400">
-                Copy this key now. You won`&apos;`t be able to see it again!
+                Copy this key now. You won&apos;t be able to see it again!
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-4">
               <div className="relative">
                 <div className="flex items-center">
                   <Input
                     type={showNewKey ? "text" : "password"}
                     value={newKeyValue}
                     readOnly
-                    className="pr-20"
+                    className="pr-20 text-sm"
                   />
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="absolute right-12"
+                    className="absolute right-12 h-8 w-8"
                     onClick={() => setShowNewKey(!showNewKey)}
                   >
                     {showNewKey ? (
@@ -184,15 +180,19 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="absolute right-2"
+                    className="absolute right-2 h-8 w-8"
                     onClick={() => handleCopyKey(newKeyValue)}
                   >
-                    <ClipboardIcon className="h-4 w-4" />
+                    {copied ? (
+                      <CheckIcon className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <ClipboardIcon className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="px-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -204,68 +204,192 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
           </Card>
         )}
 
+        {/* New key creation form */}
+        {isCreatingNew && !newKeyValue && (
+          <Card>
+            <CardHeader className="px-4">
+              <CardTitle>Create API Key</CardTitle>
+              <CardDescription>
+                Name your API key and set an optional expiration.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 px-4">
+              <div>
+                <Label htmlFor="name">API Key Name</Label>
+                <Input
+                  id="name"
+                  placeholder="e.g., iOS Shortcut Key"
+                  value={newKeyName}
+                  onChange={(e) => setNewKeyName(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="expires">Expiry Period</Label>
+                <Select 
+                  onValueChange={(value) => {
+                    setExpiresInDays(value === "never" ? undefined : Number(value));
+                  }}
+                  value={expiresInDays?.toString() || "never"}
+                >
+                  <SelectTrigger id="expires" className="w-full mt-1">
+                    <SelectValue placeholder="Select expiry period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="never">Never expires</SelectItem>
+                    <SelectItem value="7">7 days</SelectItem>
+                    <SelectItem value="30">30 days</SelectItem>
+                    <SelectItem value="90">90 days</SelectItem>
+                    <SelectItem value="365">1 year</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-between px-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsCreatingNew(false)}
+                size="sm"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateKey}
+                disabled={createKeyMutation.isPending || newKeyName.trim() === ""}
+                size="sm"
+              >
+                {createKeyMutation.isPending ? "Creating..." : "Create API Key"}
+              </Button>
+            </CardFooter>
+          </Card>
+        )}
+
         {/* List existing API keys */}
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-2 px-4">
             <CardTitle>Your API Keys</CardTitle>
             <CardDescription>
-              Keys are used to authenticate API requests. Protect them like
-              passwords.
+              Keys are used to authenticate API requests.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4">
             {apiKeys?.length ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Last Used</TableHead>
-                    <TableHead>Expires</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <div>
+                {/* Desktop view - traditional table */}
+                <div className="hidden md:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead>Last Used</TableHead>
+                        <TableHead>Expires</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {apiKeys.map((apiKey) => (
+                        <TableRow key={apiKey.id}>
+                          <TableCell className="font-medium">
+                            {apiKey.name}
+                          </TableCell>
+                          <TableCell>{formatDate(apiKey.createdAt)}</TableCell>
+                          <TableCell>
+                            {apiKey.lastUsedAt
+                              ? formatDate(apiKey.lastUsedAt)
+                              : "Never"}
+                          </TableCell>
+                          <TableCell>
+                            {apiKey.expiresAt ? (
+                              <Badge>{formatDate(apiKey.expiresAt)}</Badge>
+                            ) : (
+                              <Badge variant="outline">Never</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => setKeyToRevoke(apiKey.id)}
+                                  >
+                                    Revoke
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Revoke this API key</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile view - card-based layout */}
+                <div className="md:hidden space-y-4">
                   {apiKeys.map((apiKey) => (
-                    <TableRow key={apiKey.id}>
-                      <TableCell className="font-medium">
-                        {apiKey.name}
-                      </TableCell>
-                      <TableCell>{formatDate(apiKey.createdAt)}</TableCell>
-                      <TableCell>
-                        {apiKey.lastUsedAt
-                          ? formatDate(apiKey.lastUsedAt)
-                          : "Never"}
-                      </TableCell>
-                      <TableCell>
-                        {apiKey.expiresAt ? (
-                          <Badge>{formatDate(apiKey.expiresAt)}</Badge>
-                        ) : (
-                          <Badge variant="outline">Never</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => setKeyToRevoke(apiKey.id)}
-                              >
-                                Revoke
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Revoke this API key</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </TableCell>
-                    </TableRow>
+                    <div 
+                      key={apiKey.id} 
+                      className="border rounded-lg p-4 space-y-3"
+                    >
+                      <div className="flex justify-between items-start">
+                        <h3 className="font-medium">{apiKey.name}</h3>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreVertical className="h-4 w-4" />
+                              <span className="sr-only">Actions</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem 
+                              className="text-red-500 focus:text-red-500"
+                              onClick={() => setKeyToRevoke(apiKey.id)}
+                            >
+                              Revoke API Key
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                          <CalendarIcon className="h-3.5 w-3.5" />
+                          <span>Created:</span>
+                        </div>
+                        <span>{formatDate(apiKey.createdAt)}</span>
+                        
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                          <ClockIcon className="h-3.5 w-3.5" />
+                          <span>Last Used:</span>
+                        </div>
+                        <span>{apiKey.lastUsedAt ? formatDate(apiKey.lastUsedAt) : "Never"}</span>
+                        
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                          <CalendarDaysIcon className="h-3.5 w-3.5" />
+                          <span>Expires:</span>
+                        </div>
+                        <span>
+                          {apiKey.expiresAt ? (
+                            <Badge className="px-1.5 py-0 h-5 text-xs font-normal">
+                              {formatDate(apiKey.expiresAt)}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="px-1.5 py-0 h-5 text-xs font-normal">
+                              Never
+                            </Badge>
+                          )}
+                        </span>
+                      </div>
+                    </div>
                   ))}
-                </TableBody>
-              </Table>
+                </div>
+              </div>
             ) : (
               <div className="py-6 text-center">
                 <p className="text-muted-foreground">No API keys found</p>
@@ -276,103 +400,21 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
               </div>
             )}
           </CardContent>
-          <CardFooter>
-            <Button onClick={() => setIsCreating(true)}>
-              Create New API Key
-            </Button>
-          </CardFooter>
-        </Card>
-
-        {/* API Usage Examples */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>API Usage Examples</CardTitle>
-            <CardDescription>
-              Examples for using your API key to shorten URLs programmatically
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <h4 className="mb-1 text-sm font-semibold">HTTP Request</h4>
-                <pre className="bg-muted overflow-x-auto rounded-md p-3 text-xs">
-                  {`POST /api/shorten HTTP/1.1
-Host: ${typeof window !== "undefined" ? window.location.host : "example.com"}
-Authorization: Bearer YOUR_API_KEY
-Content-Type: application/json
-
-{
-  "url": "https://example.com/very-long-url",
-  "customSlug": "my-custom-slug" // Optional
-}`}
-                </pre>
-              </div>
-
-              <div>
-                <h4 className="mb-1 text-sm font-semibold">cURL Example</h4>
-                <pre className="bg-muted overflow-x-auto rounded-md p-3 text-xs">
-                  {`curl -X POST "https://${typeof window !== "undefined" ? window.location.host : "example.com"}/api/shorten" \\
-     -H "Authorization: Bearer YOUR_API_KEY" \\
-     -H "Content-Type: application/json" \\
-     -d '{"url":"https://example.com/very-long-url"}'`}
-                </pre>
-              </div>
-
-              <div>
-                <h4 className="mb-1 text-sm font-semibold">
-                  JavaScript Example
-                </h4>
-                <pre className="bg-muted overflow-x-auto rounded-md p-3 text-xs">
-                  {`const response = await fetch('https://${typeof window !== "undefined" ? window.location.host : "example.com"}/api/shorten', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer YOUR_API_KEY',
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    url: 'https://example.com/very-long-url',
-  }),
-});
-
-const data = await response.json();
-console.log(data.shortUrl);`}
-                </pre>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Security Guidelines */}
-        <Card className="border-green-200 bg-green-50 dark:bg-green-950/30">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center text-green-700 dark:text-green-400">
-              <ShieldCheck className="mr-2 h-5 w-5" /> Security Best Practices
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="ml-5 list-disc space-y-1 text-sm">
-              <li>
-                Never share your API keys in public repositories or client-side
-                code
-              </li>
-              <li>
-                Set expirations for keys when possible to limit risk if
-                compromised
-              </li>
-              <li>
-                Revoke keys immediately if they are no longer needed or exposed
-              </li>
-              <li>
-                Use different keys for different applications or environments
-              </li>
-            </ul>
-          </CardContent>
-          <CardFooter>
+          <CardFooter className="flex flex-col sm:flex-row gap-3 justify-between px-4">
+            {!isCreatingNew && !newKeyValue && (
+              <Button 
+                onClick={() => setIsCreatingNew(true)}
+                className="w-full sm:w-auto"
+                size="sm"
+              >
+                Create New API Key
+              </Button>
+            )}
             <Link
               href="/api-docs"
-              className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+              className="text-sm text-blue-600 hover:underline dark:text-blue-400 self-center"
             >
-              View complete API documentation →
+              View API documentation →
             </Link>
           </CardFooter>
         </Card>
@@ -382,7 +424,7 @@ console.log(data.shortUrl);`}
           open={!!keyToRevoke}
           onOpenChange={(open) => !open && setKeyToRevoke(null)}
         >
-          <AlertDialogContent>
+          <AlertDialogContent className="max-w-[90vw] sm:max-w-[425px]">
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center">
                 <AlertTriangle className="mr-2 h-5 w-5 text-red-500" />
@@ -393,7 +435,7 @@ console.log(data.shortUrl);`}
                 revoked and any applications using it will lose access.
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter>
+            <AlertDialogFooter className="flex-col sm:flex-row gap-2">
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 className="bg-red-500 hover:bg-red-600"

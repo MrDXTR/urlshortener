@@ -23,15 +23,15 @@ export function ApiKeyButton({
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="relative hidden sm:block">
+    <div className="relative">
       <Button
         variant={variant}
         size={size}
-        className="border-primary/30 bg-primary/5 hover:bg-primary/10 relative gap-2 transition-colors"
+        className="border-primary/30 bg-primary/5 hover:bg-primary/10 relative gap-2 transition-colors text-xs sm:text-sm"
         onClick={() => setIsOpen(true)}
       >
         <KeyIcon className="text-primary h-4 w-4" />
-        <span>API Keys</span>
+        <span className="sm:inline">API Keys</span>
       </Button>
       <ApiKeyManager open={isOpen} onOpenChange={setIsOpen} />
     </div>
