@@ -124,7 +124,21 @@ export default async function Home() {
       </main>
 
       <footer className="border-border bg-muted/20 border-t py-6 backdrop-blur">
-        <div className="text-muted-foreground px-4 text-center text-sm">
+        <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 px-4 text-center text-sm">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/api-docs"
+              className="hover:text-primary transition-colors"
+            >
+              API Docs
+            </Link>
+            <Link
+              href="https://github.com/MrDXTR/urlshortener"
+              className="hover:text-primary transition-colors"
+            >
+              GitHub
+            </Link>
+          </div>
           <p>
             © {new Date().getFullYear()} URL Shortener. All rights reserved.
           </p>

@@ -78,7 +78,7 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[90vh]  p-0 md:max-h-[90vh]">
+      <DialogContent className="max-h-[90vh] p-0 md:max-h-[90vh]">
         {/* Header Section with Stats */}
         <div className="bg-muted/40 border-b p-6">
           <DialogTitle className="mb-2 text-xl">URL Analytics</DialogTitle>
@@ -89,7 +89,7 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
           <div className="mt-4 grid grid-cols-3 gap-4 sm:grid-cols-3">
             <div className="bg-card border-border rounded-lg border p-4 shadow-sm">
               <div className="flex items-center">
-                <div className="bg-primary/10 mr-3 rounded-full p-2 hidden sm:block">
+                <div className="bg-primary/10 mr-3 hidden rounded-full p-2 sm:block">
                   <LinkIcon className="text-primary h-4 w-4" />
                 </div>
                 <div>
@@ -105,7 +105,7 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
 
             <div className="bg-card border-border rounded-lg border p-4 shadow-sm">
               <div className="flex items-center">
-                <div className="bg-primary/10 mr-3 rounded-full p-2 hidden sm:block">
+                <div className="bg-primary/10 mr-3 hidden rounded-full p-2 sm:block">
                   <TrendingUpIcon className="text-primary h-4 w-4" />
                 </div>
                 <div>
@@ -121,7 +121,7 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
 
             <div className="bg-card border-border rounded-lg border p-4 shadow-sm">
               <div className="flex items-center">
-                <div className="bg-primary/10 mr-3 rounded-full p-2 hidden sm:block">
+                <div className="bg-primary/10 mr-3 hidden rounded-full p-2 sm:block">
                   <ArrowUpIcon className="text-primary h-4 w-4" />
                 </div>
                 <div>

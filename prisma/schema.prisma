@@ -50,6 +50,7 @@ model User {
     accounts      Account[]
     sessions      Session[]
     urls          ShortenedURL[]
+    apiKeys       ApiKey[]
 }
 
 model VerificationToken {
@@ -70,4 +71,19 @@ model ShortenedURL {
     user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
     @@index([slug])
+}
+
+model ApiKey {
+    id          String   @id @default(cuid())
+    key         String   @unique
+    name        String
+    userId      String
+    user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    createdAt   DateTime @default(now())
+    lastUsedAt  DateTime?
+    expiresAt   DateTime?
+    revoked     Boolean  @default(false)
+    
+    @@index([userId])
+    @@index([key])
 }
