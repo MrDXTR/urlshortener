@@ -62,7 +62,13 @@ import {
   CalendarDaysIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -77,7 +83,9 @@ interface ApiKeyManagerProps {
 
 export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
   const [newKeyName, setNewKeyName] = useState("");
-  const [expiresInDays, setExpiresInDays] = useState<number | undefined>(undefined);
+  const [expiresInDays, setExpiresInDays] = useState<number | undefined>(
+    undefined,
+  );
   const [newKeyValue, setNewKeyValue] = useState<string | null>(null);
   const [showNewKey, setShowNewKey] = useState(false);
   const [keyToRevoke, setKeyToRevoke] = useState<string | null>(null);
@@ -100,18 +108,21 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
 
   const handleCreateKey = useCallback(() => {
     if (newKeyName.trim() === "") return;
-    createKeyMutation.mutate({ 
+    createKeyMutation.mutate({
       name: newKeyName,
-      expiresInDays
+      expiresInDays,
     });
     setNewKeyName("");
     setExpiresInDays(undefined);
   }, [createKeyMutation, newKeyName, expiresInDays]);
 
-  const handleRevokeKey = useCallback((id: string) => {
-    revokeKeyMutation.mutate({ id });
-    setKeyToRevoke(null);
-  }, [revokeKeyMutation]);
+  const handleRevokeKey = useCallback(
+    (id: string) => {
+      revokeKeyMutation.mutate({ id });
+      setKeyToRevoke(null);
+    },
+    [revokeKeyMutation],
+  );
 
   const handleCopyKey = useCallback((key: string) => {
     navigator.clipboard.writeText(key);
@@ -137,7 +148,7 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
 
   const CreateKeyForm = useMemo(() => {
     if (!isCreatingNew || newKeyValue) return null;
-    
+
     return (
       <Card>
         <CardHeader className="px-4">
@@ -159,12 +170,12 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
           </div>
           <div>
             <Label htmlFor="expires">Expiry Period</Label>
-            <Select 
+            <Select
               onValueChange={handleSelectChange}
               value={expiresInDays?.toString() || "never"}
               defaultValue="never"
             >
-              <SelectTrigger id="expires" className="w-full mt-1">
+              <SelectTrigger id="expires" className="mt-1 w-full">
                 <SelectValue placeholder="Select expiry period" />
               </SelectTrigger>
               <SelectContent>
@@ -178,8 +189,8 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
           </div>
         </CardContent>
         <CardFooter className="flex justify-between px-4">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setIsCreatingNew(false)}
             size="sm"
           >
@@ -195,13 +206,21 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
         </CardFooter>
       </Card>
     );
-  }, [isCreatingNew, newKeyValue, newKeyName, expiresInDays, createKeyMutation.isPending, handleCreateKey, handleSelectChange]);
+  }, [
+    isCreatingNew,
+    newKeyValue,
+    newKeyName,
+    expiresInDays,
+    createKeyMutation.isPending,
+    handleCreateKey,
+    handleSelectChange,
+  ]);
 
   if (!open) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[95vh] w-[95vw] max-w-full overflow-y-auto sm:max-w-2xl p-4 sm:p-6">
+      <DialogContent className="max-h-[95vh] w-[95vw] max-w-full overflow-y-auto p-4 sm:max-w-2xl sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center">
             <KeyIcon className="mr-2 h-5 w-5" />
@@ -215,7 +234,7 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
         {/* Display newly created key */}
         {newKeyValue && (
           <Card className="border-yellow-300 bg-yellow-50 dark:bg-yellow-950/30">
-            <CardHeader className="pb-2 px-4">
+            <CardHeader className="px-4 pb-2">
               <CardTitle className="text-sm font-medium">
                 New API Key Created
               </CardTitle>
@@ -274,7 +293,7 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
         {CreateKeyForm}
 
         <Card>
-          <CardHeader className="pb-2 px-4">
+          <CardHeader className="px-4 pb-2">
             <CardTitle>Your API Keys</CardTitle>
             <CardDescription>
               Keys are used to authenticate API requests.
@@ -337,23 +356,27 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
                   </Table>
                 </div>
 
-                <div className="md:hidden space-y-4">
+                <div className="space-y-4 md:hidden">
                   {apiKeys.map((apiKey) => (
-                    <div 
-                      key={apiKey.id} 
-                      className="border rounded-lg p-4 space-y-3"
+                    <div
+                      key={apiKey.id}
+                      className="space-y-3 rounded-lg border p-4"
                     >
-                      <div className="flex justify-between items-start">
+                      <div className="flex items-start justify-between">
                         <h3 className="font-medium">{apiKey.name}</h3>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                            >
                               <MoreVertical className="h-4 w-4" />
                               <span className="sr-only">Actions</span>
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               className="text-red-500 focus:text-red-500"
                               onClick={() => setKeyToRevoke(apiKey.id)}
                             >
@@ -362,31 +385,38 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
-                      
+
                       <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <div className="text-muted-foreground flex items-center gap-1.5">
                           <CalendarIcon className="h-3.5 w-3.5" />
                           <span>Created:</span>
                         </div>
                         <span>{formatDate(apiKey.createdAt)}</span>
-                        
-                        <div className="flex items-center gap-1.5 text-muted-foreground">
+
+                        <div className="text-muted-foreground flex items-center gap-1.5">
                           <ClockIcon className="h-3.5 w-3.5" />
                           <span>Last Used:</span>
                         </div>
-                        <span>{apiKey.lastUsedAt ? formatDate(apiKey.lastUsedAt) : "Never"}</span>
-                        
-                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <span>
+                          {apiKey.lastUsedAt
+                            ? formatDate(apiKey.lastUsedAt)
+                            : "Never"}
+                        </span>
+
+                        <div className="text-muted-foreground flex items-center gap-1.5">
                           <CalendarDaysIcon className="h-3.5 w-3.5" />
                           <span>Expires:</span>
                         </div>
                         <span>
                           {apiKey.expiresAt ? (
-                            <Badge className="px-1.5 py-0 h-5 text-xs font-normal">
+                            <Badge className="h-5 px-1.5 py-0 text-xs font-normal">
                               {formatDate(apiKey.expiresAt)}
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="px-1.5 py-0 h-5 text-xs font-normal">
+                            <Badge
+                              variant="outline"
+                              className="h-5 px-1.5 py-0 text-xs font-normal"
+                            >
                               Never
                             </Badge>
                           )}
@@ -406,9 +436,9 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
               </div>
             )}
           </CardContent>
-          <CardFooter className="flex flex-col sm:flex-row gap-3 justify-between px-4">
+          <CardFooter className="flex flex-col justify-between gap-3 px-4 sm:flex-row">
             {!isCreatingNew && !newKeyValue && (
-              <Button 
+              <Button
                 onClick={() => setIsCreatingNew(true)}
                 className="w-full sm:w-auto"
                 size="sm"
@@ -418,7 +448,7 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
             )}
             <Link
               href="/api-docs"
-              className="text-sm text-blue-600 hover:underline dark:text-blue-400 self-center"
+              className="self-center text-sm text-blue-600 hover:underline dark:text-blue-400"
             >
               View API documentation →
             </Link>
@@ -440,7 +470,7 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
                 revoked and any applications using it will lose access.
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogFooter className="flex-col gap-2 sm:flex-row">
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 className="bg-red-500 hover:bg-red-600"

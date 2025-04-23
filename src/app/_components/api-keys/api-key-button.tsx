@@ -27,7 +27,7 @@ export function ApiKeyButton({
       <Button
         variant={variant}
         size={size}
-        className="border-primary/30 bg-primary/5 hover:bg-primary/10 relative gap-2 transition-colors text-xs sm:text-sm"
+        className="border-primary/30 bg-primary/5 hover:bg-primary/10 relative gap-2 text-xs transition-colors sm:text-sm"
         onClick={() => setIsOpen(true)}
       >
         <KeyIcon className="text-primary h-4 w-4" />

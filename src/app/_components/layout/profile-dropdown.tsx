@@ -24,6 +24,7 @@ import { AnalyticsDialog } from "../analytics";
 import { UrlManager } from "../url";
 import { ApiKeyManager } from "../api-keys/api-key-manager";
 import { FaGithub } from "react-icons/fa";
+import { Skeleton } from "~/components/ui/skeleton";
 
 interface ProfileDropdownProps {
   imageUrl: string;
@@ -37,7 +38,7 @@ export function ProfileDropdown({
   email,
 }: ProfileDropdownProps) {
   // Get user's URL stats
-  const { data: urlStats } = api.url.getUserStats.useQuery();
+  const { data: urlStats, isLoading } = api.url.getUserStats.useQuery();
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showUrlManager, setShowUrlManager] = useState(false);
   const [showApiKeyManager, setShowApiKeyManager] = useState(false);
@@ -67,17 +68,25 @@ export function ProfileDropdown({
           <div className="p-2">
             <div className="bg-muted/50 grid grid-cols-2 gap-2 rounded-md p-2">
               <div className="flex flex-col items-center justify-center p-2">
-                <span className="text-primary text-xl font-bold">
-                  {urlStats?.totalUrls || 0}
-                </span>
+                {isLoading ? (
+                  <Skeleton className="mb-1 h-7 w-10" />
+                ) : (
+                  <span className="text-primary text-xl font-bold">
+                    {urlStats?.totalUrls || 0}
+                  </span>
+                )}
                 <span className="text-muted-foreground text-xs">
                   URLs Created
                 </span>
               </div>
               <div className="flex flex-col items-center justify-center p-2">
-                <span className="text-primary text-xl font-bold">
-                  {urlStats?.totalClicks || 0}
-                </span>
+                {isLoading ? (
+                  <Skeleton className="mb-1 h-7 w-10" />
+                ) : (
+                  <span className="text-primary text-xl font-bold">
+                    {urlStats?.totalClicks || 0}
+                  </span>
+                )}
                 <span className="text-muted-foreground text-xs">
                   Total Clicks
                 </span>
