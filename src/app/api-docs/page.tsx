@@ -8,8 +8,10 @@ import {
 } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { CodeBlock } from "~/components/ui/code-block";
-import { ArrowRight, Info, Shield, Code, Terminal, Package, Check } from "lucide-react";
+import { ArrowRight, Info, Shield, Code, Terminal, Package, Check, Home } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
+import Link from "next/link";
+import { ThemeToggle } from "~/app/_components/layout/theme-toggle";
 
 export const metadata: Metadata = {
   title: "API Documentation | URL Shortener",
@@ -22,7 +24,19 @@ const DOMAIN = "https://www.shorturlx.xyz";
 export default function ApiDocsPage() {
   return (
     <div className="container mx-auto max-w-6xl px-4 sm:px-6 pb-12">
-      <div className="flex flex-col space-y-4 text-center mb-10 pt-8">
+      <div className="flex justify-between items-center pt-4 mb-4">
+        <Link 
+          href="/" 
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+        >
+          <Home className="h-4 w-4" />
+          <span className="sr-only md:not-sr-only">Home</span>
+        </Link>
+        
+        <ThemeToggle />
+      </div>
+
+      <div className="flex flex-col space-y-4 text-center mb-10 pt-4">
         <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
           API Documentation
         </h1>

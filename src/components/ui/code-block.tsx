@@ -3,7 +3,9 @@
 import React, { useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { atomDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Check, Copy } from "lucide-react";
+import { useTheme } from "~/hooks/use-theme";
 
 // For type safety, we need to declare the module types
 declare module 'react-syntax-highlighter';
@@ -23,6 +25,7 @@ export function CodeBlock({
   showLineNumbers = true,
 }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
+  const { isDark } = useTheme();
 
   const copyToClipboard = async () => {
     await navigator.clipboard.writeText(code);
@@ -33,7 +36,7 @@ export function CodeBlock({
   return (
     <div className="relative w-full rounded-lg overflow-hidden">
       {fileName && (
-        <div className="flex justify-between items-center bg-zinc-800 px-4 py-2 text-sm text-zinc-300 border-b border-zinc-700">
+        <div className="flex justify-between items-center dark:bg-zinc-800 bg-zinc-100 px-4 py-2 text-sm text-zinc-800 dark:text-zinc-300 border-b border-zinc-200 dark:border-zinc-700">
           <span>{fileName}</span>
         </div>
       )}
@@ -41,19 +44,19 @@ export function CodeBlock({
       <div className="relative">
         <button
           onClick={copyToClipboard}
-          className="absolute right-2 top-2 p-2 rounded-md bg-zinc-700/50 hover:bg-zinc-700 transition-colors"
+          className="absolute right-2 top-2 p-2 rounded-md bg-zinc-200/50 hover:bg-zinc-200 dark:bg-zinc-700/50 dark:hover:bg-zinc-700 transition-colors"
           aria-label="Copy code"
         >
           {copied ? (
-            <Check className="h-4 w-4 text-green-400" />
+            <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
           ) : (
-            <Copy className="h-4 w-4 text-zinc-300" />
+            <Copy className="h-4 w-4 text-zinc-700 dark:text-zinc-300" />
           )}
         </button>
         
         <SyntaxHighlighter
           language={language}
-          style={atomDark}
+          style={isDark ? atomDark : oneLight}
           showLineNumbers={showLineNumbers}
           wrapLines={true}
           customStyle={{
