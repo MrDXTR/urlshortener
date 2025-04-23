@@ -33,7 +33,7 @@ export default function ApiDocsPage() {
 
       <Tabs defaultValue="overview" className="w-full">
         <div className="overflow-x-auto mb-8">
-          <TabsList className="h-12 justify-start rounded-lg p-1 w-full md:w-auto">
+          <TabsList className="h-12 justify-start rounded-lg p-1 w-auto ">
             <TabsTrigger value="overview" className="flex items-center gap-2 h-10 px-4">
               <Info className="h-4 w-4" /> Overview
             </TabsTrigger>
