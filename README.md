@@ -13,6 +13,9 @@ A modern, fast, and secure URL shortening service built with the T3 Stack.
 - 🚀 Fast redirects with minimal latency
 - 🛡️ Content filtering for safer browsing
 - 🌓 Light/Dark mode support
+- 🧰 Command-line interface (CLI) for developers
+- 🔌 RESTful API for integration with your applications
+- 📱 iOS Shortcut support
 
 ## Tech Stack
 
@@ -74,6 +77,80 @@ This project leverages the powerful T3 Stack:
 2. **Track your links**: Sign in to view analytics for your shortened URLs
 3. **Customize slugs**: Create personalized, memorable links
 4. **Share**: Copy and share your shortened URLs anywhere
+
+## API Integration
+
+Our service provides a RESTful API for developers to integrate URL shortening into their applications.
+
+### Base URL
+```
+https://www.shorturlx.xyz/api
+```
+
+### Authentication
+API requests require an API key that you can obtain from your account dashboard. Include the API key in the Authorization header:
+
+```
+Authorization: Bearer YOUR_API_KEY
+```
+
+### Rate Limits
+- **Authenticated**: 100 requests per 10 minutes
+- **Unauthenticated**: 10 requests per 10 minutes
+
+### Endpoints
+
+#### Create a Shortened URL
+```
+POST /api/shorten
+```
+
+Request body:
+```json
+{
+  "url": "https://example.com/very-long-url",
+  "customSlug": "my-custom-slug"  // Optional
+}
+```
+
+For full API documentation, visit our [API Documentation](https://www.shorturlx.xyz/api-docs) page.
+
+## CLI Tool
+
+We provide an official command-line interface for creating shortened URLs directly from your terminal.
+
+### Installation
+
+```bash
+npm install -g shorturlx-cli
+```
+
+### Basic Usage
+
+```bash
+shorturlx --url "https://example.com/very-long-url" --api-key "YOUR_API_KEY"
+```
+
+### Features
+
+- Shorten URLs with a simple command
+- Support for custom slugs
+- Automatic clipboard copying
+- Colorized output
+- API key authentication
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--url, -u` | The URL to shorten (required) |
+| `--custom, -c` | Custom slug (optional) |
+| `--api-key, -k` | Your API key (can also be set via environment variable) |
+| `--endpoint, -e` | API endpoint (defaults to our official endpoint) |
+| `--copy, -cp` | Copy shortened URL to clipboard (defaults to true) |
+| `--help` | Show help |
+
+For more details on the CLI tool, visit our [API Documentation](https://www.shorturlx.xyz/api-docs) page.
 
 ## Deployment
 
