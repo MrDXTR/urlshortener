@@ -99,13 +99,13 @@ export default function LoginPage() {
           <Button
             onClick={handleGithubSignIn}
             disabled={isLoading.google || isLoading.github}
-            className="w-full cursor-pointer transition-colors duration-300 hover:translate-y-[-1px] hover:opacity-90 bg-gray-400 hover:bg-zinc-600 dark:hover:text-white text-white dark:text-black"
+            className="w-full cursor-pointer transition-colors duration-300 hover:translate-y-[-1px] hover:opacity-90 bg-[#24292e] hover:bg-[#1a1e21] text-white"
             size="lg"
           >
             {isLoading.github ? (
               <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em]"></span>
             ) : (
-              <FaGithub className="mr-2 h-5 w-5 dark:text-black text-white" />
+              <FaGithub className="mr-2 h-5 w-5" />
             )}
             Sign in with GitHub
           </Button>
