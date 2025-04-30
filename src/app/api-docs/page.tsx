@@ -441,8 +441,10 @@ except Exception as e:
                         website and customize it with your API key.
                       </p>
                       <p className="text-primary font-medium">
-                        Coming soon: A direct download link will be available
-                        here to get our ready-to-use URL Shortener iOS Shortcut.
+                        <Link href="https://www.shorturlx.xyz/Shortcut" target="_blank" className="flex items-center gap-1.5">
+                          <span>Download our ready-to-use URL Shortener iOS Shortcut</span>
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </Link>
                       </p>
                     </div>
                   </div>
