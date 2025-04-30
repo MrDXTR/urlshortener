@@ -21,6 +21,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@auth/core": "^0.39.0",
     "@auth/prisma-adapter": "^2.7.2",
     "@hookform/resolvers": "^5.0.1",
     "@prisma/client": "^6.5.0",

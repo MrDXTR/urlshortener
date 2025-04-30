@@ -12,20 +12,35 @@ import {
 } from "~/components/ui/card";
 import { ShineBorder } from "~/components/magicui/shine-border";
 import { AuroraText } from "~/components/magicui/aurora-text";
-import { LogIn } from "lucide-react";
 import Image from "next/image";
+import { Separator } from "~/components/ui/separator";
+import { FaGithub } from "react-icons/fa";
 
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<{ [key: string]: boolean }>({
+    google: false,
+    github: false,
+  });
 
   const handleGoogleSignIn = async () => {
-    setIsLoading(true);
+    setIsLoading({ ...isLoading, google: true });
     try {
       await signIn("google", { callbackUrl: "/" });
     } catch (error) {
       console.error("Login failed:", error);
     } finally {
-      setIsLoading(false);
+      setIsLoading({ ...isLoading, google: false });
+    }
+  };
+
+  const handleGithubSignIn = async () => {
+    setIsLoading({ ...isLoading, github: true });
+    try {
+      await signIn("github", { callbackUrl: "/" });
+    } catch (error) {
+      console.error("Login failed:", error);
+    } finally {
+      setIsLoading({ ...isLoading, github: false });
     }
   };
 
@@ -57,11 +72,11 @@ export default function LoginPage() {
         <CardContent className="space-y-6">
           <Button
             onClick={handleGoogleSignIn}
-            disabled={isLoading}
+            disabled={isLoading.google || isLoading.github}
             className="w-full cursor-pointer transition-colors duration-300 hover:translate-y-[-1px] hover:opacity-90"
             size="lg"
           >
-            {isLoading ? (
+            {isLoading.google ? (
               <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em]"></span>
             ) : (
               <Image
@@ -73,6 +88,26 @@ export default function LoginPage() {
               />
             )}
             Sign in with Google
+          </Button>
+          
+          <div className="flex items-center gap-4">
+            <Separator className="flex-1" />
+            <span className="text-xs text-muted-foreground">OR</span>
+            <Separator className="flex-1" />
+          </div>
+          
+          <Button
+            onClick={handleGithubSignIn}
+            disabled={isLoading.google || isLoading.github}
+            className="w-full cursor-pointer transition-colors duration-300 hover:translate-y-[-1px] hover:opacity-90 bg-gray-400 hover:bg-zinc-600 dark:hover:text-white text-white dark:text-black"
+            size="lg"
+          >
+            {isLoading.github ? (
+              <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em]"></span>
+            ) : (
+              <FaGithub className="mr-2 h-5 w-5 dark:text-black text-white" />
+            )}
+            Sign in with GitHub
           </Button>
 
           <div className="text-center">
