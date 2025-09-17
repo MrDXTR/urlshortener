@@ -35,7 +35,10 @@ export class RedisService {
   }
 
   // Rate limiting methods
-  async incrementWithExpiry(key: string, expirySeconds: number): Promise<number> {
+  async incrementWithExpiry(
+    key: string,
+    expirySeconds: number,
+  ): Promise<number> {
     const pipeline = this.client.pipeline();
     pipeline.incr(key);
     pipeline.expire(key, expirySeconds);
@@ -43,17 +46,19 @@ export class RedisService {
     return (results?.[0] as any) ?? 0;
   }
 
-  async getWithExpiry(key: string): Promise<{ value: number; ttl: number } | null> {
+  async getWithExpiry(
+    key: string,
+  ): Promise<{ value: number; ttl: number } | null> {
     const pipeline = this.client.pipeline();
     pipeline.get(key);
     pipeline.ttl(key);
     const results = await pipeline.exec();
-    
+
     const value = results?.[0] as any;
     const ttl = results?.[1] as number;
-    
+
     if (value === null || value === undefined) return null;
-    
+
     return {
       value: Number(value),
       ttl: ttl > 0 ? ttl : 0,
@@ -61,7 +66,11 @@ export class RedisService {
   }
 
   // Caching methods
-  async setWithExpiry(key: string, value: string, expirySeconds: number): Promise<void> {
+  async setWithExpiry(
+    key: string,
+    value: string,
+    expirySeconds: number,
+  ): Promise<void> {
     await this.client.setex(key, expirySeconds, value);
   }
 

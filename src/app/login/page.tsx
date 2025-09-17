@@ -89,17 +89,17 @@ export default function LoginPage() {
             )}
             Sign in with Google
           </Button>
-          
+
           <div className="flex items-center gap-4">
             <Separator className="flex-1" />
-            <span className="text-xs text-muted-foreground">OR</span>
+            <span className="text-muted-foreground text-xs">OR</span>
             <Separator className="flex-1" />
           </div>
-          
+
           <Button
             onClick={handleGithubSignIn}
             disabled={isLoading.google || isLoading.github}
-            className="w-full cursor-pointer transition-colors duration-300 hover:translate-y-[-1px] hover:opacity-90 bg-[#24292e] hover:bg-[#1a1e21] text-white"
+            className="w-full cursor-pointer bg-[#24292e] text-white transition-colors duration-300 hover:translate-y-[-1px] hover:bg-[#1a1e21] hover:opacity-90"
             size="lg"
           >
             {isLoading.github ? (

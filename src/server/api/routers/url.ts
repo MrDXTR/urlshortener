@@ -66,7 +66,11 @@ export const urlRouter = createTRPCRouter({
         });
 
         try {
-          await redisService.setWithExpiry(`url:${slug}`, JSON.stringify(newUrl), 3600);
+          await redisService.setWithExpiry(
+            `url:${slug}`,
+            JSON.stringify(newUrl),
+            3600,
+          );
         } catch (redisError) {
           console.warn("Failed to cache new URL:", redisError);
         }
@@ -130,7 +134,11 @@ export const urlRouter = createTRPCRouter({
           });
 
           try {
-            await redisService.setWithExpiry(`url:${newSlug}`, JSON.stringify(newUrl), 3600);
+            await redisService.setWithExpiry(
+              `url:${newSlug}`,
+              JSON.stringify(newUrl),
+              3600,
+            );
           } catch (redisError) {
             console.warn("Failed to cache new URL:", redisError);
           }
@@ -147,7 +155,11 @@ export const urlRouter = createTRPCRouter({
         });
 
         try {
-          await redisService.setWithExpiry(`url:${slug}`, JSON.stringify(newUrl), 3600);
+          await redisService.setWithExpiry(
+            `url:${slug}`,
+            JSON.stringify(newUrl),
+            3600,
+          );
         } catch (redisError) {
           console.warn("Failed to cache new URL:", redisError);
         }
@@ -175,30 +187,34 @@ export const urlRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       try {
         const cacheKey = `url:${input.slug}`;
-        
+
         try {
           const cachedUrl = await redisService.get(cacheKey);
           if (cachedUrl) {
             const url = JSON.parse(cachedUrl);
-            
-       
+
             try {
               await redisService.incr(`clicks:${url.id}`);
             } catch (redisClickError) {
-              console.warn("Redis click increment failed, updating DB directly:", redisClickError);
-  
+              console.warn(
+                "Redis click increment failed, updating DB directly:",
+                redisClickError,
+              );
+
               await ctx.db.shortenedURL.update({
                 where: { id: url.id },
                 data: { clicks: { increment: 1 } },
               });
             }
-            
 
             url.clicks += 1;
             return url;
           }
         } catch (redisError) {
-          console.warn("Redis cache read failed, falling back to database:", redisError);
+          console.warn(
+            "Redis cache read failed, falling back to database:",
+            redisError,
+          );
         }
 
         const url = await ctx.db.shortenedURL.findUnique({
@@ -216,7 +232,10 @@ export const urlRouter = createTRPCRouter({
         try {
           await redisService.incr(`clicks:${url.id}`);
         } catch (redisClickError) {
-          console.warn("Redis click increment failed, updating DB directly:", redisClickError);
+          console.warn(
+            "Redis click increment failed, updating DB directly:",
+            redisClickError,
+          );
           // Fallback to direct DB update if Redis fails
           await ctx.db.shortenedURL.update({
             where: { id: url.id },
@@ -228,7 +247,11 @@ export const urlRouter = createTRPCRouter({
         const updatedUrl = { ...url, clicks: url.clicks + 1 };
 
         try {
-          await redisService.setWithExpiry(cacheKey, JSON.stringify(updatedUrl), 3600);
+          await redisService.setWithExpiry(
+            cacheKey,
+            JSON.stringify(updatedUrl),
+            3600,
+          );
         } catch (redisError) {
           console.warn("Redis cache write failed:", redisError);
         }
