@@ -181,11 +181,20 @@ export const urlRouter = createTRPCRouter({
           if (cachedUrl) {
             const url = JSON.parse(cachedUrl);
             
-            ctx.db.shortenedURL.update({
-              where: { id: url.id },
-              data: { clicks: { increment: 1 } },
-            }).catch(console.error);
+       
+            try {
+              await redisService.incr(`clicks:${url.id}`);
+            } catch (redisClickError) {
+              console.warn("Redis click increment failed, updating DB directly:", redisClickError);
+  
+              await ctx.db.shortenedURL.update({
+                where: { id: url.id },
+                data: { clicks: { increment: 1 } },
+              });
+            }
             
+
+            url.clicks += 1;
             return url;
           }
         } catch (redisError) {
@@ -203,18 +212,28 @@ export const urlRouter = createTRPCRouter({
           });
         }
 
+        // Increment click count atomically in Redis
         try {
-          await redisService.setWithExpiry(cacheKey, JSON.stringify(url), 3600);
+          await redisService.incr(`clicks:${url.id}`);
+        } catch (redisClickError) {
+          console.warn("Redis click increment failed, updating DB directly:", redisClickError);
+          // Fallback to direct DB update if Redis fails
+          await ctx.db.shortenedURL.update({
+            where: { id: url.id },
+            data: { clicks: { increment: 1 } },
+          });
+        }
+
+        // Update the url object with incremented click count before caching
+        const updatedUrl = { ...url, clicks: url.clicks + 1 };
+
+        try {
+          await redisService.setWithExpiry(cacheKey, JSON.stringify(updatedUrl), 3600);
         } catch (redisError) {
           console.warn("Redis cache write failed:", redisError);
         }
 
-        await ctx.db.shortenedURL.update({
-          where: { id: url.id },
-          data: { clicks: { increment: 1 } },
-        });
-
-        return url;
+        return updatedUrl;
       } catch (error) {
         console.error("Error getting URL by slug:", error);
 
@@ -434,8 +453,6 @@ export const urlRouter = createTRPCRouter({
           });
         }
 
-        // In a real app, you would track location data in a separate table
-        // For now, just return the total click count as a single location
         return [{ name: "All Regions", clicks: url.clicks }];
       } catch (error) {
         console.error("Error getting location data:", error);
@@ -467,8 +484,6 @@ export const urlRouter = createTRPCRouter({
 
     const totalClicks = result._sum.clicks ?? 0;
 
-    // In a real app, you would track device data in a separate table
-    // For now, just return the total click count
     return [{ name: "All Devices", value: totalClicks }];
   }),
 
@@ -476,7 +491,6 @@ export const urlRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       try {
-        // First check if the URL exists and belongs to the user
         const url = await ctx.db.shortenedURL.findUnique({
           where: { id: input.id },
         });
@@ -488,7 +502,6 @@ export const urlRouter = createTRPCRouter({
           });
         }
 
-        // Check if the URL belongs to the current user
         if (url.userId !== ctx.session.user.id) {
           throw new TRPCError({
             code: "FORBIDDEN",

@@ -73,6 +73,24 @@ export class RedisService {
     await this.client.del(key);
   }
 
+  // Atomic counter methods
+  async incr(key: string): Promise<number> {
+    return await this.client.incr(key);
+  }
+
+  async incrWithExpiry(key: string, expirySeconds: number): Promise<number> {
+    const pipeline = this.client.pipeline();
+    pipeline.incr(key);
+    pipeline.expire(key, expirySeconds);
+    const results = await pipeline.exec();
+    return (results?.[0] as any) ?? 0;
+  }
+
+  async getNumber(key: string): Promise<number | null> {
+    const value = await this.client.get(key);
+    return value !== null ? Number(value) : null;
+  }
+
   // Health check
   async ping(): Promise<boolean> {
     try {
