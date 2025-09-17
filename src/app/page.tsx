@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { auth } from "~/server/auth";
 import { ThemeToggle } from "./_components";
-import { BorderBeam } from "~/components/magicui/border-beam";
 import {
   Card,
   CardContent,
@@ -11,7 +10,6 @@ import {
 } from "~/components/ui/card";
 import { UrlShortener } from "./_components";
 import { FeaturesSection } from "./_components";
-import { UrlManager } from "./_components";
 import { ProfileDropdown } from "./_components";
 import { FaGithub } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
@@ -19,12 +17,14 @@ import { SlugErrorHandler } from "./_components/url/slug-error-handler";
 import { LinkIcon } from "lucide-react";
 import { UrlButton } from "./_components/url/url-button";
 import { ShineBorder } from "~/components/magicui/shine-border";
+import { Toaster } from "sonner";
 
 export default async function Home() {
   const session = await auth();
 
   return (
     <div className="flex min-h-screen flex-col">
+      <Toaster position="top-center" />
       <SlugErrorHandler />
 
       {/* Header */}

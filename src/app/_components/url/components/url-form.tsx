@@ -130,8 +130,14 @@ export function UrlShortenerForm() {
 
   const form = session ? authForm : guestForm;
 
+  const utils = api.useUtils();
+
   const createUrl = api.url.create.useMutation({
-    onSuccess: handleSuccess,
+    onSuccess: (data) => {
+      void utils.url.getUserUrls.invalidate();
+      void utils.url.getUserStats.invalidate();
+      handleSuccess(data);
+    },
     onError: handleError,
   });
 

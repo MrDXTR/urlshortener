@@ -7,6 +7,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
+import { redisService } from "~/lib/redis";
 
 // List of adult content patterns to block
 const adultContentPatterns = [
@@ -56,13 +57,25 @@ export const urlRouter = createTRPCRouter({
           });
         }
 
-        return await ctx.db.shortenedURL.create({
+        const newUrl = await ctx.db.shortenedURL.create({
           data: {
             slug,
             longUrl: input.url,
             userId: ctx.session.user.id,
           },
         });
+
+        try {
+          await redisService.setWithExpiry(
+            `url:${slug}`,
+            JSON.stringify(newUrl),
+            3600,
+          );
+        } catch (redisError) {
+          console.warn("Failed to cache new URL:", redisError);
+        }
+
+        return newUrl;
       } catch (error) {
         console.error("Error creating shortened URL:", error);
 
@@ -112,22 +125,46 @@ export const urlRouter = createTRPCRouter({
             });
           }
 
-          return ctx.db.shortenedURL.create({
+          const newUrl = await ctx.db.shortenedURL.create({
             data: {
               slug: newSlug,
               longUrl: input.url,
               // No userId for anonymous users
             },
           });
+
+          try {
+            await redisService.setWithExpiry(
+              `url:${newSlug}`,
+              JSON.stringify(newUrl),
+              3600,
+            );
+          } catch (redisError) {
+            console.warn("Failed to cache new URL:", redisError);
+          }
+
+          return newUrl;
         }
 
-        return await ctx.db.shortenedURL.create({
+        const newUrl = await ctx.db.shortenedURL.create({
           data: {
             slug,
             longUrl: input.url,
             // No userId for anonymous users
           },
         });
+
+        try {
+          await redisService.setWithExpiry(
+            `url:${slug}`,
+            JSON.stringify(newUrl),
+            3600,
+          );
+        } catch (redisError) {
+          console.warn("Failed to cache new URL:", redisError);
+        }
+
+        return newUrl;
       } catch (error) {
         console.error("Error creating anonymous shortened URL:", error);
 
@@ -149,6 +186,37 @@ export const urlRouter = createTRPCRouter({
     .input(z.object({ slug: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       try {
+        const cacheKey = `url:${input.slug}`;
+
+        try {
+          const cachedUrl = await redisService.get(cacheKey);
+          if (cachedUrl) {
+            const url = JSON.parse(cachedUrl);
+
+            try {
+              await redisService.incr(`clicks:${url.id}`);
+            } catch (redisClickError) {
+              console.warn(
+                "Redis click increment failed, updating DB directly:",
+                redisClickError,
+              );
+
+              await ctx.db.shortenedURL.update({
+                where: { id: url.id },
+                data: { clicks: { increment: 1 } },
+              });
+            }
+
+            url.clicks += 1;
+            return url;
+          }
+        } catch (redisError) {
+          console.warn(
+            "Redis cache read failed, falling back to database:",
+            redisError,
+          );
+        }
+
         const url = await ctx.db.shortenedURL.findUnique({
           where: { slug: input.slug },
         });
@@ -160,13 +228,35 @@ export const urlRouter = createTRPCRouter({
           });
         }
 
-        // Update click count in a separate query
-        await ctx.db.shortenedURL.update({
-          where: { id: url.id },
-          data: { clicks: { increment: 1 } },
-        });
+        // Increment click count atomically in Redis
+        try {
+          await redisService.incr(`clicks:${url.id}`);
+        } catch (redisClickError) {
+          console.warn(
+            "Redis click increment failed, updating DB directly:",
+            redisClickError,
+          );
+          // Fallback to direct DB update if Redis fails
+          await ctx.db.shortenedURL.update({
+            where: { id: url.id },
+            data: { clicks: { increment: 1 } },
+          });
+        }
 
-        return url;
+        // Update the url object with incremented click count before caching
+        const updatedUrl = { ...url, clicks: url.clicks + 1 };
+
+        try {
+          await redisService.setWithExpiry(
+            cacheKey,
+            JSON.stringify(updatedUrl),
+            3600,
+          );
+        } catch (redisError) {
+          console.warn("Redis cache write failed:", redisError);
+        }
+
+        return updatedUrl;
       } catch (error) {
         console.error("Error getting URL by slug:", error);
 
@@ -386,8 +476,6 @@ export const urlRouter = createTRPCRouter({
           });
         }
 
-        // In a real app, you would track location data in a separate table
-        // For now, just return the total click count as a single location
         return [{ name: "All Regions", clicks: url.clicks }];
       } catch (error) {
         console.error("Error getting location data:", error);
@@ -419,8 +507,6 @@ export const urlRouter = createTRPCRouter({
 
     const totalClicks = result._sum.clicks ?? 0;
 
-    // In a real app, you would track device data in a separate table
-    // For now, just return the total click count
     return [{ name: "All Devices", value: totalClicks }];
   }),
 
@@ -428,7 +514,6 @@ export const urlRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       try {
-        // First check if the URL exists and belongs to the user
         const url = await ctx.db.shortenedURL.findUnique({
           where: { id: input.id },
         });
@@ -440,7 +525,6 @@ export const urlRouter = createTRPCRouter({
           });
         }
 
-        // Check if the URL belongs to the current user
         if (url.userId !== ctx.session.user.id) {
           throw new TRPCError({
             code: "FORBIDDEN",
@@ -452,6 +536,13 @@ export const urlRouter = createTRPCRouter({
         await ctx.db.shortenedURL.delete({
           where: { id: input.id },
         });
+
+        // Invalidate cache
+        try {
+          await redisService.del(`url:${url.slug}`);
+        } catch (redisError) {
+          console.warn("Failed to invalidate Redis cache:", redisError);
+        }
 
         return { success: true };
       } catch (error) {

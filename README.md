@@ -24,6 +24,7 @@ This project leverages the powerful T3 Stack:
 - **Framework**: [Next.js](https://nextjs.org) (App Router)
 - **Authentication**: [NextAuth.js](https://next-auth.js.org)
 - **Database ORM**: [Prisma](https://prisma.io)
+- **Caching & Rate Limiting**: [Redis](https://redis.io) via [Upstash](https://upstash.com)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com)
 - **API Layer**: [tRPC](https://trpc.io)
 - **Type Safety**: [TypeScript](https://www.typescriptlang.org/)
@@ -35,6 +36,7 @@ This project leverages the powerful T3 Stack:
 - Node.js (v18 or higher)
 - npm or yarn
 - PostgreSQL (recommended) or other database supported by Prisma
+- Redis instance (we recommend [Upstash](https://upstash.com) for easy setup)
 
 ### Installation
 
@@ -54,22 +56,48 @@ This project leverages the powerful T3 Stack:
 3. Set up environment variables
    ```bash
    cp .env.example .env
-   # Edit .env with your database and authentication settings
+   # Edit .env with your database, Redis, and authentication settings
    ```
 
-4. Run database migrations
+   Required environment variables:
+   ```bash
+   # Database
+   DATABASE_URL="postgresql://username:password@localhost:5432/urlshortener"
+   
+   # Redis (Upstash)
+   UPSTASH_REDIS_REST_URL="https://your-redis-instance.upstash.io"
+   UPSTASH_REDIS_REST_TOKEN="your-redis-token"
+   
+   # Authentication
+   AUTH_SECRET="your-auth-secret-here"
+   AUTH_GOOGLE_ID="your-google-client-id"
+   AUTH_GOOGLE_SECRET="your-google-client-secret"
+   ```
+
+4. Set up Redis (Upstash)
+   
+   a. Go to [Upstash Console](https://console.upstash.com/)
+   b. Create a new Redis database
+   c. Copy the REST URL and Token from your database dashboard
+   d. Add them to your `.env` file:
+   ```bash
+   UPSTASH_REDIS_REST_URL="https://your-redis-instance.upstash.io"
+   UPSTASH_REDIS_REST_TOKEN="your-redis-token"
+   ```
+
+5. Run database migrations
    ```bash
    npx prisma migrate dev
    ```
 
-5. Start the development server
+6. Start the development server
    ```bash
    npm run dev
    # or
    yarn dev
    ```
 
-6. Open [http://localhost:3000](http://localhost:3000) in your browser
+7. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## Usage
 
