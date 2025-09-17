@@ -40,7 +40,7 @@ export class RedisService {
     pipeline.incr(key);
     pipeline.expire(key, expirySeconds);
     const results = await pipeline.exec();
-    return results?.[0]?.result as number ?? 0;
+    return (results?.[0] as any) ?? 0;
   }
 
   async getWithExpiry(key: string): Promise<{ value: number; ttl: number } | null> {
@@ -49,8 +49,8 @@ export class RedisService {
     pipeline.ttl(key);
     const results = await pipeline.exec();
     
-    const value = results?.[0]?.result;
-    const ttl = results?.[1]?.result as number;
+    const value = results?.[0] as any;
+    const ttl = results?.[1] as number;
     
     if (value === null || value === undefined) return null;
     
