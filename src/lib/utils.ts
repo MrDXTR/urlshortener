@@ -6,13 +6,14 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // Regex patterns to block adult content URLs
+// Use word boundaries to avoid false positives (e.g. "adults" in "group_adults=5")
 const adultContentPatterns = [
-  /porn/i,
-  /xxx/i,
-  /adult/i,
-  /sex/i,
-  /escort/i,
-  /nsfw/i,
+  /\bporn\b/i,
+  /\bxxx\b/i,
+  /\badult\b/i,
+  /\bsex\b/i,
+  /\bescort\b/i,
+  /\bnsfw\b/i,
 ];
 
 export interface UrlValidationResult {

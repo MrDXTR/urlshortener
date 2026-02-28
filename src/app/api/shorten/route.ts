@@ -6,13 +6,14 @@ import { getValidApiKey } from "~/lib/api-key";
 import { rateLimit } from "~/lib/rate-limit";
 
 // Validate URLs (reuse logic from existing tRPC routes)
+// Use word boundaries to avoid false positives (e.g. "adults" in "group_adults=5")
 const adultContentPatterns = [
-  /porn/i,
-  /xxx/i,
-  /adult/i,
-  /sex/i,
-  /escort/i,
-  /nsfw/i,
+  /\bporn\b/i,
+  /\bxxx\b/i,
+  /\badult\b/i,
+  /\bsex\b/i,
+  /\bescort\b/i,
+  /\bnsfw\b/i,
 ];
 
 const containsAdultContent = (url: string) => {

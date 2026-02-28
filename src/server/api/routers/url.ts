@@ -10,13 +10,14 @@ import {
 import { redisService } from "~/lib/redis";
 
 // List of adult content patterns to block
+// Use word boundaries to avoid false positives (e.g. "adults" in "group_adults=5")
 const adultContentPatterns = [
-  /porn/i,
-  /xxx/i,
-  /adult/i,
-  /sex/i,
-  /escort/i,
-  /nsfw/i,
+  /\bporn\b/i,
+  /\bxxx\b/i,
+  /\badult\b/i,
+  /\bsex\b/i,
+  /\bescort\b/i,
+  /\bnsfw\b/i,
 ];
 
 // Function to check if URL contains adult content
