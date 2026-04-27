@@ -42,8 +42,8 @@ This project leverages the powerful T3 Stack:
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/yourusername/url-shortener.git
-   cd url-shortener
+   git clone https://github.com/MrDXTR/urlshortener.git
+   cd urlshortener
    ```
 
 2. Install dependencies
