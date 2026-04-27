@@ -30,7 +30,21 @@ export const apiKeyRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       try {
         const userId = ctx.session.user.id;
-        return await createApiKey(userId, input.name, input.expiresInDays);
+        const { key, apiKey } = await createApiKey(
+          userId,
+          input.name,
+          input.expiresInDays,
+        );
+
+        return {
+          key,
+          apiKey: {
+            id: apiKey.id,
+            name: apiKey.name,
+            createdAt: apiKey.createdAt,
+            expiresAt: apiKey.expiresAt,
+          },
+        };
       } catch (error) {
         console.error("Error creating API key:", error);
         throw new TRPCError({

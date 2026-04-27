@@ -172,7 +172,8 @@ X-RateLimit-Reset: 1698759340`}
                     To get an API key, sign in to your ShortURLx account and
                     visit the API Key Management section in your dashboard. You
                     can generate a new API key with a name and optional
-                    expiration date.
+                    expiration date. New keys are only shown once when they are
+                    created, so copy them immediately.
                   </p>
                 </div>
 

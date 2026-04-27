@@ -97,12 +97,12 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
     onSuccess: (data) => {
       setNewKeyValue(data.key);
       setIsCreatingNew(false);
-      refetch();
+      void refetch();
     },
   });
   const revokeKeyMutation = api.apiKey.revokeApiKey.useMutation({
     onSuccess: () => {
-      refetch();
+      void refetch();
     },
   });
 
@@ -297,6 +297,12 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
             <CardTitle>Your API Keys</CardTitle>
             <CardDescription>
               Keys are used to authenticate API requests.
+              {apiKeys?.some((apiKey) => apiKey.isLegacy) && (
+                <span className="mt-2 block text-amber-600 dark:text-amber-400">
+                  Legacy API keys created before the security upgrade must be
+                  rotated before they can be used again.
+                </span>
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent className="px-4">
@@ -317,7 +323,12 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
                       {apiKeys.map((apiKey) => (
                         <TableRow key={apiKey.id}>
                           <TableCell className="font-medium">
-                            {apiKey.name}
+                            <div className="flex items-center gap-2">
+                              <span>{apiKey.name}</span>
+                              {apiKey.isLegacy && (
+                                <Badge variant="secondary">Rotate</Badge>
+                              )}
+                            </div>
                           </TableCell>
                           <TableCell>{formatDate(apiKey.createdAt)}</TableCell>
                           <TableCell>
@@ -363,7 +374,12 @@ export function ApiKeyManager({ open, onOpenChange }: ApiKeyManagerProps) {
                       className="space-y-3 rounded-lg border p-4"
                     >
                       <div className="flex items-start justify-between">
-                        <h3 className="font-medium">{apiKey.name}</h3>
+                        <div className="space-y-1">
+                          <h3 className="font-medium">{apiKey.name}</h3>
+                          {apiKey.isLegacy && (
+                            <Badge variant="secondary">Legacy key</Badge>
+                          )}
+                        </div>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button

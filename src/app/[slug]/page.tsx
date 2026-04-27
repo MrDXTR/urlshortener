@@ -29,7 +29,9 @@ export default async function SlugPage({ params }: PageProps) {
     const caller = createCaller(ctx);
     const url = await caller.url.getBySlug({ slug });
 
-    console.log(`Redirecting ${slug} to ${url.longUrl}`);
+    if (!url?.longUrl) {
+      notFound();
+    }
     redirect(url.longUrl);
   } catch (error) {
     if (error instanceof Error && error.message.includes("NEXT_REDIRECT")) {

@@ -8,6 +8,7 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 import { redisService } from "~/lib/redis";
+import { encryptUrl, resolveUrlRecord } from "~/lib/url-security";
 
 // List of adult content patterns to block
 // Use word boundaries to avoid false positives (e.g. "adults" in "group_adults=5")
@@ -33,6 +34,29 @@ const urlSchema = z
   .refine((url) => !containsAdultContent(url), {
     message: "URLs containing adult content are not allowed",
   });
+
+const toClientUrl = ({
+  id,
+  slug,
+  longUrl,
+  createdAt,
+  clicks,
+  userId,
+}: {
+  id: string;
+  slug: string;
+  longUrl: string | null;
+  createdAt: Date;
+  clicks: number;
+  userId: string | null;
+}) => ({
+  id,
+  slug,
+  longUrl,
+  createdAt,
+  clicks,
+  userId,
+});
 
 export const urlRouter = createTRPCRouter({
   create: protectedProcedure
@@ -61,22 +85,16 @@ export const urlRouter = createTRPCRouter({
         const newUrl = await ctx.db.shortenedURL.create({
           data: {
             slug,
-            longUrl: input.url,
+            longUrl: null,
+            ...encryptUrl(input.url),
             userId: ctx.session.user.id,
           },
         });
 
-        try {
-          await redisService.setWithExpiry(
-            `url:${slug}`,
-            JSON.stringify(newUrl),
-            3600,
-          );
-        } catch (redisError) {
-          console.warn("Failed to cache new URL:", redisError);
-        }
-
-        return newUrl;
+        return toClientUrl({
+          ...newUrl,
+          longUrl: input.url,
+        });
       } catch (error) {
         console.error("Error creating shortened URL:", error);
 
@@ -129,43 +147,31 @@ export const urlRouter = createTRPCRouter({
           const newUrl = await ctx.db.shortenedURL.create({
             data: {
               slug: newSlug,
-              longUrl: input.url,
+              longUrl: null,
+              ...encryptUrl(input.url),
               // No userId for anonymous users
             },
           });
 
-          try {
-            await redisService.setWithExpiry(
-              `url:${newSlug}`,
-              JSON.stringify(newUrl),
-              3600,
-            );
-          } catch (redisError) {
-            console.warn("Failed to cache new URL:", redisError);
-          }
-
-          return newUrl;
+          return toClientUrl({
+            ...newUrl,
+            longUrl: input.url,
+          });
         }
 
         const newUrl = await ctx.db.shortenedURL.create({
           data: {
             slug,
-            longUrl: input.url,
+            longUrl: null,
+            ...encryptUrl(input.url),
             // No userId for anonymous users
           },
         });
 
-        try {
-          await redisService.setWithExpiry(
-            `url:${slug}`,
-            JSON.stringify(newUrl),
-            3600,
-          );
-        } catch (redisError) {
-          console.warn("Failed to cache new URL:", redisError);
-        }
-
-        return newUrl;
+        return toClientUrl({
+          ...newUrl,
+          longUrl: input.url,
+        });
       } catch (error) {
         console.error("Error creating anonymous shortened URL:", error);
 
@@ -187,37 +193,6 @@ export const urlRouter = createTRPCRouter({
     .input(z.object({ slug: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       try {
-        const cacheKey = `url:${input.slug}`;
-
-        try {
-          const cachedUrl = await redisService.get(cacheKey);
-          if (cachedUrl) {
-            const url = JSON.parse(cachedUrl);
-
-            try {
-              await redisService.incr(`clicks:${url.id}`);
-            } catch (redisClickError) {
-              console.warn(
-                "Redis click increment failed, updating DB directly:",
-                redisClickError,
-              );
-
-              await ctx.db.shortenedURL.update({
-                where: { id: url.id },
-                data: { clicks: { increment: 1 } },
-              });
-            }
-
-            url.clicks += 1;
-            return url;
-          }
-        } catch (redisError) {
-          console.warn(
-            "Redis cache read failed, falling back to database:",
-            redisError,
-          );
-        }
-
         const url = await ctx.db.shortenedURL.findUnique({
           where: { slug: input.slug },
         });
@@ -244,20 +219,12 @@ export const urlRouter = createTRPCRouter({
           });
         }
 
-        // Update the url object with incremented click count before caching
-        const updatedUrl = { ...url, clicks: url.clicks + 1 };
+        const resolvedUrl = await resolveUrlRecord(ctx.db, url);
 
-        try {
-          await redisService.setWithExpiry(
-            cacheKey,
-            JSON.stringify(updatedUrl),
-            3600,
-          );
-        } catch (redisError) {
-          console.warn("Redis cache write failed:", redisError);
-        }
-
-        return updatedUrl;
+        return toClientUrl({
+          ...resolvedUrl,
+          clicks: url.clicks + 1,
+        });
       } catch (error) {
         console.error("Error getting URL by slug:", error);
 
@@ -277,10 +244,16 @@ export const urlRouter = createTRPCRouter({
 
   getUserUrls: protectedProcedure.query(async ({ ctx }) => {
     try {
-      return await ctx.db.shortenedURL.findMany({
+      const urls = await ctx.db.shortenedURL.findMany({
         where: { userId: ctx.session.user.id },
         orderBy: { createdAt: "desc" },
       });
+
+      const resolvedUrls = await Promise.all(
+        urls.map((url) => resolveUrlRecord(ctx.db, url)),
+      );
+
+      return resolvedUrls.map((url) => toClientUrl(url));
     } catch (error) {
       console.error("Error fetching user URLs:", error);
 
@@ -537,14 +510,6 @@ export const urlRouter = createTRPCRouter({
         await ctx.db.shortenedURL.delete({
           where: { id: input.id },
         });
-
-        // Invalidate cache
-        try {
-          await redisService.del(`url:${url.slug}`);
-        } catch (redisError) {
-          console.warn("Failed to invalidate Redis cache:", redisError);
-        }
-
         return { success: true };
       } catch (error) {
         console.error("Error deleting URL:", error);

@@ -72,6 +72,9 @@ This project leverages the powerful T3 Stack:
    AUTH_SECRET="your-auth-secret-here"
    AUTH_GOOGLE_ID="your-google-client-id"
    AUTH_GOOGLE_SECRET="your-google-client-secret"
+
+   # URL encryption
+   URL_ENCRYPTION_KEY="base64-encoded-32-byte-key"
    ```
 
 4. Set up Redis (Upstash)
@@ -83,6 +86,11 @@ This project leverages the powerful T3 Stack:
    ```bash
    UPSTASH_REDIS_REST_URL="https://your-redis-instance.upstash.io"
    UPSTASH_REDIS_REST_TOKEN="your-redis-token"
+   ```
+
+   Generate a URL encryption key with:
+   ```bash
+   openssl rand -base64 32
    ```
 
 5. Run database migrations

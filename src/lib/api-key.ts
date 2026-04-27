@@ -1,40 +1,51 @@
-import { db } from "~/server/db";
 import crypto from "crypto";
 
-// Generate a secure random API key
+import { db } from "~/server/db";
+
+const API_KEY_PREFIX = "sk_";
+
 export function generateApiKey(): string {
-  return `sk_${crypto.randomBytes(24).toString("hex")}`;
+  return `${API_KEY_PREFIX}${crypto.randomBytes(24).toString("hex")}`;
 }
 
-// Retrieve and validate an API key
+export function hashApiKey(key: string): string {
+  return crypto.createHash("sha256").update(key).digest("hex");
+}
+
 export async function getValidApiKey(key: string) {
   try {
-    const apiKey = await db.apiKey.findUnique({
-      where: { key },
+    const keyHash = hashApiKey(key);
+    const apiKey = await db.apiKey.findFirst({
+      where: {
+        keyHash,
+        revoked: false,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
     });
 
-    if (!apiKey) {
-      return null;
+    if (apiKey) {
+      return { status: "valid" as const, apiKey };
     }
 
-    // Check if the key is revoked
-    if (apiKey.revoked) {
-      return null;
+    const legacyApiKey = await db.apiKey.findFirst({
+      where: {
+        key,
+        revoked: false,
+      },
+      select: { id: true },
+    });
+
+    if (legacyApiKey) {
+      return { status: "legacy" as const };
     }
 
-    // Check if the key is expired
-    if (apiKey.expiresAt && apiKey.expiresAt < new Date()) {
-      return null;
-    }
-
-    return apiKey;
+    return { status: "invalid" as const };
   } catch (error) {
     console.error("Error validating API key:", error);
-    return null;
+    return { status: "invalid" as const };
   }
 }
 
-// Create a new API key for a user
 export async function createApiKey(
   userId: string,
   name: string,
@@ -45,17 +56,22 @@ export async function createApiKey(
     ? new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000)
     : null;
 
-  return db.apiKey.create({
+  const apiKey = await db.apiKey.create({
     data: {
-      key,
+      keyHash: hashApiKey(key),
+      key: null,
       name,
       userId,
       expiresAt,
     },
   });
+
+  return {
+    key,
+    apiKey,
+  };
 }
 
-// Revoke an API key
 export async function revokeApiKey(id: string, userId: string) {
   return db.apiKey.updateMany({
     where: {
@@ -68,9 +84,8 @@ export async function revokeApiKey(id: string, userId: string) {
   });
 }
 
-// Get all API keys for a user
 export async function getUserApiKeys(userId: string) {
-  return db.apiKey.findMany({
+  const apiKeys = await db.apiKey.findMany({
     where: {
       userId,
       revoked: false,
@@ -79,4 +94,9 @@ export async function getUserApiKeys(userId: string) {
       createdAt: "desc",
     },
   });
+
+  return apiKeys.map(({ key, keyHash, ...apiKey }) => ({
+    ...apiKey,
+    isLegacy: Boolean(key && !keyHash),
+  }));
 }

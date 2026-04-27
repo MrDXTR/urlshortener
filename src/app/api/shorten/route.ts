@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/server/db";
 import { getValidApiKey } from "~/lib/api-key";
 import { rateLimit } from "~/lib/rate-limit";
+import { encryptUrl } from "~/lib/url-security";
 
 // Validate URLs (reuse logic from existing tRPC routes)
 // Use word boundaries to avoid false positives (e.g. "adults" in "group_adults=5")
@@ -92,19 +93,29 @@ export async function POST(request: NextRequest) {
         ? authHeader.substring(7)
         : authHeader;
 
-      const apiKey = await getValidApiKey(apiKeyValue);
+      const apiKeyResult = await getValidApiKey(apiKeyValue);
 
-      if (!apiKey) {
+      if (apiKeyResult.status === "legacy") {
+        return NextResponse.json(
+          {
+            error:
+              "This API key was created before our security upgrade and must be rotated from the dashboard.",
+          },
+          { status: 401 },
+        );
+      }
+
+      if (apiKeyResult.status !== "valid") {
         return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
       }
 
       // Update last used timestamp
       await db.apiKey.update({
-        where: { id: apiKey.id },
+        where: { id: apiKeyResult.apiKey.id },
         data: { lastUsedAt: new Date() },
       });
 
-      userId = apiKey.userId;
+      userId = apiKeyResult.apiKey.userId;
     }
 
     // Generate random slug if custom not provided
@@ -143,7 +154,7 @@ export async function POST(request: NextRequest) {
     const shortenedUrl = await db.shortenedURL.create({
       data: {
         slug,
-        longUrl: url,
+        ...encryptUrl(url),
         userId,
       },
     });
@@ -158,7 +169,7 @@ export async function POST(request: NextRequest) {
         id: shortenedUrl.id,
         shortUrl,
         slug: shortenedUrl.slug,
-        longUrl: shortenedUrl.longUrl,
+        longUrl: url,
         createdAt: shortenedUrl.createdAt,
       },
       {
