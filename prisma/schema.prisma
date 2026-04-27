@@ -62,20 +62,26 @@ model VerificationToken {
 }
 
 model ShortenedURL {
-    id        String   @id @default(cuid())
-    slug      String   @unique // The short code for the URL
-    longUrl   String   @db.Text // The original URL
-    createdAt DateTime @default(now())
-    clicks    Int      @default(0) // Track number of clicks/redirects
-    userId    String?  // Optional: link to user who created it
-    user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+    id               String   @id @default(cuid())
+    slug             String   @unique // The short code for the URL
+    longUrl          String?  @db.Text // Legacy plaintext storage for backward-compatible migration
+    longUrlEncrypted String?  @db.Text
+    longUrlIv        String?
+    longUrlTag       String?
+    longUrlHash      String?
+    createdAt        DateTime @default(now())
+    clicks           Int      @default(0) // Track number of clicks/redirects
+    userId           String?  // Optional: link to user who created it
+    user             User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
     @@index([slug])
+    @@index([longUrlHash])
 }
 
 model ApiKey {
     id          String   @id @default(cuid())
-    key         String   @unique
+    key         String?  @unique
+    keyHash     String?  @unique
     name        String
     userId      String
     user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -86,4 +92,5 @@ model ApiKey {
     
     @@index([userId])
     @@index([key])
+    @@index([keyHash])
 }

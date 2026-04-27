@@ -262,12 +262,12 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
                             </TableCell>
                             <TableCell className="max-w-[260px] truncate">
                               <a
-                                href={url.longUrl}
+                                href={url.longUrl ?? "#"}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="hover:text-primary block truncate"
                               >
-                                {truncateUrl(url.longUrl)}
+                                {truncateUrl(url.longUrl ?? "Unknown URL")}
                               </a>
                             </TableCell>
                             <TableCell className="text-muted-foreground text-sm">
