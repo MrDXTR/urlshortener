@@ -120,7 +120,7 @@ Our service provides a RESTful API for developers to integrate URL shortening in
 
 ### Base URL
 ```
-https://www.shorturlx.xyz/api
+https://www.smolurlx.xyz/api
 ```
 
 ### Authentication
@@ -149,7 +149,7 @@ Request body:
 }
 ```
 
-For full API documentation, visit our [API Documentation](https://www.shorturlx.xyz/api-docs) page.
+For full API documentation, visit our [API Documentation](https://www.smolurlx.xyz/api-docs) page.
 
 ## CLI Tool
 
@@ -158,13 +158,13 @@ We provide an official command-line interface for creating shortened URLs direct
 ### Installation
 
 ```bash
-npm install -g shorturlx-cli
+npm install -g smolurlx-cli
 ```
 
 ### Basic Usage
 
 ```bash
-shorturlx --url "https://example.com/very-long-url" --api-key "YOUR_API_KEY"
+smolurlx --url "https://example.com/long-url" --api-key "YOUR_API_KEY"
 ```
 
 ### Features
@@ -186,7 +186,7 @@ shorturlx --url "https://example.com/very-long-url" --api-key "YOUR_API_KEY"
 | `--copy, -cp` | Copy shortened URL to clipboard (defaults to true) |
 | `--help` | Show help |
 
-For more details on the CLI tool, visit our [API Documentation](https://www.shorturlx.xyz/api-docs) page.
+For more details on the CLI tool, visit our [API Documentation](https://www.smolurlx.xyz/api-docs) page.
 
 ## Deployment
 

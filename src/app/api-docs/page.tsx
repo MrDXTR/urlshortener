@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 };
 
 // Set the domain for the API
-const DOMAIN = "https://www.shorturlx.xyz";
+const DOMAIN = "https://www.smolurlx.xyz";
 
 export default function ApiDocsPage() {
   return (
@@ -443,7 +443,7 @@ except Exception as e:
                       </p>
                       <p className="text-primary font-medium">
                         <Link
-                          href="https://www.shorturlx.xyz/Shortcut"
+                          href="https://www.smolurlx.xyz/Shortcut"
                           target="_blank"
                           className="flex items-center gap-1.5"
                         >
@@ -483,7 +483,7 @@ except Exception as e:
                 <div>
                   <h3 className="mb-3 text-lg font-medium">Installation</h3>
                   <CodeBlock
-                    code={"npm install -g shorturlx-cli"}
+                    code={"npm install -g smolurlx-cli"}
                     language="bash"
                     fileName="Install globally"
                   />
@@ -493,7 +493,7 @@ except Exception as e:
                   <h3 className="mb-3 text-lg font-medium">Basic Usage</h3>
                   <CodeBlock
                     code={
-                      'shorturlx --url "https://example.com/very-long-url" --api-key "YOUR_API_KEY"'
+                      'smolurlx --url "https://example.com/very-long-url" --api-key "YOUR_API_KEY"'
                     }
                     language="bash"
                     fileName="Basic command"
@@ -641,7 +641,7 @@ Short URL copied to clipboard!`}
                       <h4 className="mb-2 font-medium">With custom slug:</h4>
                       <CodeBlock
                         code={
-                          'shorturlx --url "https://example.com/very-long-url" --custom "my-custom-slug" --api-key "YOUR_API_KEY"'
+                          'smolurlx --url "https://example.com/very-long-url" --custom "my-custom-slug" --api-key "YOUR_API_KEY"'
                         }
                         language="bash"
                         showLineNumbers={false}
@@ -654,7 +654,7 @@ Short URL copied to clipboard!`}
                       </h4>
                       <CodeBlock
                         code={
-                          'shorturlx --url "https://example.com/very-long-url" --endpoint "https://your-custom-instance.com/api/shorten"'
+                          'smolurlx --url "https://example.com/very-long-url" --endpoint "https://your-custom-instance.com/api/shorten"'
                         }
                         language="bash"
                         showLineNumbers={false}
