@@ -11,9 +11,11 @@ import {
   ClockIcon,
   AlertCircle,
   LinkIcon,
+  Search,
 } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import { useSession } from "next-auth/react";
 import { api } from "~/trpc/react";
 import { formatDistanceToNow } from "date-fns";
@@ -55,6 +57,13 @@ export function UrlManager({ open, onOpenChange }: UrlManagerProps = {}) {
 
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [urlToDelete, setUrlToDelete] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredUrls = urls?.filter(
+    (url) =>
+      url.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      url?.longUrl?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
@@ -156,6 +165,17 @@ export function UrlManager({ open, onOpenChange }: UrlManagerProps = {}) {
                 {session?.user?.name}
               </div>
             </div>
+
+            <div className="mb-4 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search your URLs..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 bg-card/50 border-primary/20 focus-visible:ring-primary/30"
+              />
+            </div>
+
             <Separator className="bg-primary/20 mb-4" />
             <div className="relative z-20">
               {/* URL List Content */}
@@ -175,10 +195,19 @@ export function UrlManager({ open, onOpenChange }: UrlManagerProps = {}) {
                     Create your first shortened URL to see it here!
                   </p>
                 </div>
+              ) : filteredUrls?.length === 0 ? (
+                <div className="border-primary/30 flex flex-col items-center justify-center space-y-3 rounded-lg border border-dashed p-8 text-center">
+                  <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-full">
+                    <Search className="text-primary/70 h-6 w-6" />
+                  </div>
+                  <p className="text-muted-foreground">
+                    No URLs found matching &quot;{searchQuery}&quot;.
+                  </p>
+                </div>
               ) : (
                 <div className="grid gap-3">
-                  {urls
-                    .slice()
+                  {filteredUrls
+                    ?.slice()
                     .sort(
                       (a, b) =>
                         new Date(b.createdAt).getTime() -
