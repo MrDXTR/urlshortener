@@ -204,19 +204,20 @@ export const urlRouter = createTRPCRouter({
           });
         }
 
-        // Increment click count atomically in Redis
+        // Increment click count in the database (source of truth for analytics)
+        await ctx.db.shortenedURL.update({
+          where: { id: url.id },
+          data: { clicks: { increment: 1 } },
+        });
+
+        // Also increment in Redis as a secondary cache (fire-and-forget)
         try {
           await redisService.incr(`clicks:${url.id}`);
         } catch (redisClickError) {
           console.warn(
-            "Redis click increment failed, updating DB directly:",
+            "Redis click cache increment failed (non-critical):",
             redisClickError,
           );
-          // Fallback to direct DB update if Redis fails
-          await ctx.db.shortenedURL.update({
-            where: { id: url.id },
-            data: { clicks: { increment: 1 } },
-          });
         }
 
         const resolvedUrl = await resolveUrlRecord(ctx.db, url);
