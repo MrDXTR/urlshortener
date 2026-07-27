@@ -91,10 +91,18 @@ export const urlRouter = createTRPCRouter({
           },
         });
 
-        return toClientUrl({
+        const clientUrl = toClientUrl({
           ...newUrl,
           longUrl: input.url,
         });
+
+        void redisService
+          .setWithExpiry(`url:${slug}`, JSON.stringify(clientUrl), 604800)
+          .catch((err) =>
+            console.warn("Redis pre-cache error on URL creation:", err),
+          );
+
+        return clientUrl;
       } catch (error) {
         console.error("Error creating shortened URL:", error);
 
@@ -153,10 +161,18 @@ export const urlRouter = createTRPCRouter({
             },
           });
 
-          return toClientUrl({
+          const clientUrl = toClientUrl({
             ...newUrl,
             longUrl: input.url,
           });
+
+          void redisService
+            .setWithExpiry(`url:${newSlug}`, JSON.stringify(clientUrl), 604800)
+            .catch((err) =>
+              console.warn("Redis pre-cache error on anon creation:", err),
+            );
+
+          return clientUrl;
         }
 
         const newUrl = await ctx.db.shortenedURL.create({
@@ -168,10 +184,18 @@ export const urlRouter = createTRPCRouter({
           },
         });
 
-        return toClientUrl({
+        const clientUrl = toClientUrl({
           ...newUrl,
           longUrl: input.url,
         });
+
+        void redisService
+          .setWithExpiry(`url:${slug}`, JSON.stringify(clientUrl), 604800)
+          .catch((err) =>
+            console.warn("Redis pre-cache error on anon creation:", err),
+          );
+
+        return clientUrl;
       } catch (error) {
         console.error("Error creating anonymous shortened URL:", error);
 
@@ -193,6 +217,53 @@ export const urlRouter = createTRPCRouter({
     .input(z.object({ slug: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       try {
+        const cacheKey = `url:${input.slug}`;
+
+        // 1. Try reading from Redis cache first
+        try {
+          const cachedVal = await redisService.get(cacheKey);
+          if (cachedVal) {
+            const parsed = (
+              typeof cachedVal === "string" ? JSON.parse(cachedVal) : cachedVal
+            ) as {
+              id: string;
+              slug: string;
+              longUrl: string | null;
+              createdAt: string | Date;
+              clicks: number;
+              userId: string | null;
+            };
+
+            // Non-blocking background click count increments
+            void ctx.db.shortenedURL
+              .update({
+                where: { id: parsed.id },
+                data: { clicks: { increment: 1 } },
+              })
+              .catch((dbErr) =>
+                console.warn("Background DB click update failed:", dbErr),
+              );
+
+            void redisService
+              .incr(`clicks:${parsed.id}`)
+              .catch((rErr) =>
+                console.warn("Background Redis click increment failed:", rErr),
+              );
+
+            return {
+              ...parsed,
+              createdAt: new Date(parsed.createdAt),
+              clicks: parsed.clicks + 1,
+            };
+          }
+        } catch (cacheReadError) {
+          console.warn(
+            "Redis cache lookup error, falling back to database:",
+            cacheReadError,
+          );
+        }
+
+        // 2. Cache miss: Fetch from PostgreSQL
         const url = await ctx.db.shortenedURL.findUnique({
           where: { slug: input.slug },
         });
@@ -204,28 +275,36 @@ export const urlRouter = createTRPCRouter({
           });
         }
 
-        // Increment click count in the database (source of truth for analytics)
-        await ctx.db.shortenedURL.update({
-          where: { id: url.id },
-          data: { clicks: { increment: 1 } },
-        });
-
-        // Also increment in Redis as a secondary cache (fire-and-forget)
-        try {
-          await redisService.incr(`clicks:${url.id}`);
-        } catch (redisClickError) {
-          console.warn(
-            "Redis click cache increment failed (non-critical):",
-            redisClickError,
+        // Non-blocking background click count increments
+        void ctx.db.shortenedURL
+          .update({
+            where: { id: url.id },
+            data: { clicks: { increment: 1 } },
+          })
+          .catch((dbErr) =>
+            console.warn("Background DB click update failed:", dbErr),
           );
-        }
+
+        void redisService
+          .incr(`clicks:${url.id}`)
+          .catch((rErr) =>
+            console.warn("Background Redis click increment failed:", rErr),
+          );
 
         const resolvedUrl = await resolveUrlRecord(ctx.db, url);
-
-        return toClientUrl({
+        const clientData = toClientUrl({
           ...resolvedUrl,
           clicks: url.clicks + 1,
         });
+
+        // 3. Populate Redis cache asynchronously (7 days TTL)
+        void redisService
+          .setWithExpiry(cacheKey, JSON.stringify(clientData), 604800)
+          .catch((rCacheErr) =>
+            console.warn("Redis set cache error:", rCacheErr),
+          );
+
+        return clientData;
       } catch (error) {
         console.error("Error getting URL by slug:", error);
 
@@ -507,10 +586,18 @@ export const urlRouter = createTRPCRouter({
           });
         }
 
-        // Delete the URL
+        // Delete the URL from DB
         await ctx.db.shortenedURL.delete({
           where: { id: input.id },
         });
+
+        // Invalidate Redis cache
+        void redisService
+          .del(`url:${url.slug}`)
+          .catch((err) =>
+            console.warn("Redis cache deletion error on deleteUrl:", err),
+          );
+
         return { success: true };
       } catch (error) {
         console.error("Error deleting URL:", error);

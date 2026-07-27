@@ -62,7 +62,7 @@ export function UrlManager({ open, onOpenChange }: UrlManagerProps = {}) {
   const filteredUrls = urls?.filter(
     (url) =>
       url.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      url?.longUrl?.toLowerCase().includes(searchQuery.toLowerCase())
+      url?.longUrl?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -166,13 +166,13 @@ export function UrlManager({ open, onOpenChange }: UrlManagerProps = {}) {
               </div>
             </div>
 
-            <div className="mb-4 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="relative mb-4">
+              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
               <Input
                 placeholder="Search your URLs..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 bg-card/50 border-primary/20 focus-visible:ring-primary/30"
+                className="bg-card/50 border-primary/20 focus-visible:ring-primary/30 pl-9"
               />
             </div>
 

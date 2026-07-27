@@ -73,9 +73,7 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
         .slice(0, 6)
         .map((url) => ({
           slug:
-            url.slug.length > 14
-              ? url.slug.substring(0, 14) + "…"
-              : url.slug,
+            url.slug.length > 14 ? url.slug.substring(0, 14) + "…" : url.slug,
           fullSlug: url.slug,
           clicks: url.clicks,
         })),
@@ -88,8 +86,7 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
     totalUrls > 0 ? parseFloat((totalClicks / totalUrls).toFixed(1)) : 0;
 
   const copySlug = async (slug: string) => {
-    const domain =
-      typeof window !== "undefined" ? window.location.origin : "";
+    const domain = typeof window !== "undefined" ? window.location.origin : "";
     await navigator.clipboard.writeText(`${domain}/${slug}`);
     setCopiedSlug(slug);
     setTimeout(() => setCopiedSlug(null), 1500);
@@ -99,9 +96,7 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-2xl gap-0 overflow-hidden p-0 sm:max-w-2xl">
         <div className="border-b px-6 pt-6 pb-5">
-          <DialogTitle className="text-lg font-semibold">
-            Analytics
-          </DialogTitle>
+          <DialogTitle className="text-lg font-semibold">Analytics</DialogTitle>
           <DialogDescription className="text-muted-foreground mt-0.5 text-sm">
             Performance overview of your shortened URLs
           </DialogDescription>
@@ -128,7 +123,10 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
           </div>
         </div>
 
-        <Tabs defaultValue="overview" className="flex flex-1 flex-col overflow-hidden">
+        <Tabs
+          defaultValue="overview"
+          className="flex flex-1 flex-col overflow-hidden"
+        >
           <div className="border-b px-6 pt-2">
             <TabsList className="h-9">
               <TabsTrigger value="overview" className="gap-1.5 text-xs">
@@ -144,7 +142,7 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
 
           <TabsContent
             value="overview"
-            className="flex-1 overflow-y-auto px-6 pt-5 pb-6 max-h-[calc(100vh-290px)]"
+            className="max-h-[calc(100vh-290px)] flex-1 overflow-y-auto px-6 pt-5 pb-6"
           >
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-medium">Top Performing Links</h3>
@@ -298,7 +296,7 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
                         day: "numeric",
                         year:
                           new Date(url.createdAt).getFullYear() !==
-                            new Date().getFullYear()
+                          new Date().getFullYear()
                             ? "numeric"
                             : undefined,
                       })}
@@ -315,7 +313,6 @@ export function AnalyticsDialog({ open, onOpenChange }: AnalyticsDialogProps) {
     </Dialog>
   );
 }
-
 
 function StatCard({
   label,
@@ -335,7 +332,7 @@ function StatCard({
           <p className="text-muted-foreground text-[11px] font-medium">
             {label}
           </p>
-          <p className="mt-1 text-xl font-bold tabular-nums tracking-tight">
+          <p className="mt-1 text-xl font-bold tracking-tight tabular-nums">
             {isLoading ? (
               <Skeleton className="mt-0.5 h-6 w-12 rounded" />
             ) : (
@@ -349,7 +346,7 @@ function StatCard({
   );
 }
 
-// Fallback UI 
+// Fallback UI
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-14 text-center">

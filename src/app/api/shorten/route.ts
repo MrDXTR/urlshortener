@@ -5,6 +5,7 @@ import { db } from "~/server/db";
 import { getValidApiKey } from "~/lib/api-key";
 import { rateLimit } from "~/lib/rate-limit";
 import { encryptUrl } from "~/lib/url-security";
+import { redisService } from "~/lib/redis";
 
 // Validate URLs (reuse logic from existing tRPC routes)
 // Use word boundaries to avoid false positives (e.g. "adults" in "group_adults=5")
@@ -158,6 +159,21 @@ export async function POST(request: NextRequest) {
         userId,
       },
     });
+
+    void redisService
+      .setWithExpiry(
+        `url:${shortenedUrl.slug}`,
+        JSON.stringify({
+          id: shortenedUrl.id,
+          slug: shortenedUrl.slug,
+          longUrl: url,
+          createdAt: shortenedUrl.createdAt,
+          clicks: 0,
+          userId,
+        }),
+        604800,
+      )
+      .catch((err) => console.warn("Redis pre-cache error in API route:", err));
 
     // Construct the full URL
     const host = request.headers.get("host");

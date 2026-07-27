@@ -32,9 +32,7 @@ function getEncryptionKey() {
   const key = Buffer.from(env.URL_ENCRYPTION_KEY, "base64");
 
   if (key.length !== URL_ENCRYPTION_KEY_BYTES) {
-    throw new Error(
-      "URL_ENCRYPTION_KEY must be a base64-encoded 32-byte key",
-    );
+    throw new Error("URL_ENCRYPTION_KEY must be a base64-encoded 32-byte key");
   }
 
   cachedKey = key;
@@ -53,10 +51,7 @@ export function encryptUrl(url: string) {
     iv,
   );
 
-  const encrypted = Buffer.concat([
-    cipher.update(url, "utf8"),
-    cipher.final(),
-  ]);
+  const encrypted = Buffer.concat([cipher.update(url, "utf8"), cipher.final()]);
   const tag = cipher.getAuthTag();
 
   return {
@@ -103,10 +98,7 @@ function getStoredLongUrl(record: UrlRecord) {
 
 type DbClient = Pick<typeof db, "shortenedURL">;
 
-export async function resolveLongUrl(
-  db: DbClient,
-  record: UrlRecord,
-) {
+export async function resolveLongUrl(db: DbClient, record: UrlRecord) {
   const longUrl = getStoredLongUrl(record);
 
   if (!record.longUrlEncrypted || !record.longUrlIv || !record.longUrlTag) {
@@ -123,10 +115,7 @@ export async function resolveLongUrl(
   return longUrl;
 }
 
-export async function resolveUrlRecord(
-  db: DbClient,
-  record: UrlRecord,
-) {
+export async function resolveUrlRecord(db: DbClient, record: UrlRecord) {
   const longUrl = await resolveLongUrl(db, record);
 
   return {
