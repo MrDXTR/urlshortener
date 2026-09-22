@@ -1,6 +1,6 @@
 # URL Shortener
 
-![URL Shortener Logo](/public/Logo.png)
+![URL Shortener Logo](https://res.cloudinary.com/i27d0xpa/image/upload/v1790077122/equishare_bcvorn.png)
 
 A modern, fast, and secure URL shortening service built with the T3 Stack.
 
